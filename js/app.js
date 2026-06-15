@@ -100,7 +100,7 @@ function renderDashboard() {
         <span class="title">⛳ ${round.club}</span>
         <span class="sub">${new Date(round.date).toLocaleDateString("de-CH")}</span>
       </div>
-      <div class="right"><span class="amount" title="Brutto / Netto">${round.scoreGross}${netPart}</span></div>
+      <div class="right"><span class="amount" title="Par / Anzahl Schläge">${round.scoreGross}${netPart}</span></div>
     `;
     recentRoundsList.appendChild(li);
   }

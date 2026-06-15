@@ -113,7 +113,7 @@ function render() {
     amount.className = "amount";
     const netPart = round.scoreNet != null ? ` / ${round.scoreNet}` : "";
     amount.textContent = `${round.scoreGross}${netPart}`;
-    amount.title = "Brutto / Netto";
+    amount.title = "Par / Anzahl Schläge";
 
     const editBtn = document.createElement("button");
     editBtn.className = "icon-btn";
@@ -181,24 +181,29 @@ form.addEventListener("submit", async (e) => {
     notes: notesField.value.trim()
   };
 
-  if (pendingFile) {
-    if (existingScorecard) await deleteScorecard(existingScorecard.path);
-    const uploaded = await uploadScorecard(currentUid, pendingFile);
-    data.scorecardUrl = uploaded.url;
-    data.scorecardPath = uploaded.path;
-  } else if (existingScorecard) {
-    data.scorecardUrl = existingScorecard.url;
-    data.scorecardPath = existingScorecard.path;
-  }
+  try {
+    if (pendingFile) {
+      if (existingScorecard) await deleteScorecard(existingScorecard.path);
+      const uploaded = await uploadScorecard(currentUid, pendingFile);
+      data.scorecardUrl = uploaded.url;
+      data.scorecardPath = uploaded.path;
+    } else if (existingScorecard) {
+      data.scorecardUrl = existingScorecard.url;
+      data.scorecardPath = existingScorecard.path;
+    }
 
-  if (idField.value) {
-    await updateRound(currentUid, idField.value, data);
-  } else {
-    await addRound(currentUid, data);
-  }
+    if (idField.value) {
+      await updateRound(currentUid, idField.value, data);
+    } else {
+      await addRound(currentUid, data);
+    }
 
-  resetForm();
-  await reload();
+    resetForm();
+    await reload();
+  } catch (err) {
+    console.error(err);
+    alert("Speichern fehlgeschlagen: " + err.message);
+  }
 });
 
 cancelBtn.addEventListener("click", resetForm);

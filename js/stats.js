@@ -143,14 +143,14 @@ function renderScoreChart(rounds, year, month) {
       labels,
       datasets: [
         {
-          label: "Brutto",
+          label: "Par",
           data: gross,
           borderColor: "#1f7a3f",
           backgroundColor: "transparent",
           spanGaps: true
         },
         {
-          label: "Netto",
+          label: "Anzahl Schläge",
           data: net,
           borderColor: "#3b82f6",
           backgroundColor: "transparent",
