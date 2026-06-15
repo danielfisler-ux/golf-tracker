@@ -1,11 +1,9 @@
-import { listRounds, addRound, updateRound, deleteRound, uploadScorecard, deleteScorecard } from "./db.js";
+import { listRounds, addRound, updateRound, deleteRound } from "./db.js";
 import { runOcr } from "./ocr.js";
 
 let currentUid = null;
 let rounds = [];
 let onChangeCallback = null;
-let pendingFile = null;
-let existingScorecard = null;
 
 const form = document.getElementById("roundForm");
 const formTitle = document.getElementById("roundFormTitle");
@@ -46,8 +44,6 @@ function resetForm() {
   holesField.value = "18";
   formTitle.textContent = "Neue Runde";
   cancelBtn.classList.add("hidden");
-  pendingFile = null;
-  existingScorecard = null;
   ocrStatus.classList.add("hidden");
   ocrTextDetails.classList.add("hidden");
 }
@@ -62,10 +58,6 @@ function fillForm(round) {
   notesField.value = round.notes || "";
   formTitle.textContent = "Runde bearbeiten";
   cancelBtn.classList.remove("hidden");
-  pendingFile = null;
-  existingScorecard = round.scorecardUrl
-    ? { url: round.scorecardUrl, path: round.scorecardPath }
-    : null;
   ocrStatus.classList.add("hidden");
   ocrTextDetails.classList.add("hidden");
   form.scrollIntoView({ behavior: "smooth" });
@@ -97,16 +89,6 @@ function render() {
     meta.appendChild(title);
     meta.appendChild(sub);
 
-    if (round.scorecardUrl) {
-      const link = document.createElement("a");
-      link.href = round.scorecardUrl;
-      link.target = "_blank";
-      link.rel = "noopener";
-      link.className = "sub";
-      link.textContent = "📎 Scorecard ansehen";
-      meta.appendChild(link);
-    }
-
     const right = document.createElement("div");
     right.className = "right";
     const amount = document.createElement("span");
@@ -127,7 +109,6 @@ function render() {
     deleteBtn.title = "Löschen";
     deleteBtn.addEventListener("click", async () => {
       if (confirm("Diese Runde wirklich löschen?")) {
-        await deleteScorecard(round.scorecardPath);
         await deleteRound(currentUid, round.id);
         await reload();
       }
@@ -146,7 +127,6 @@ function render() {
 fileField.addEventListener("change", async () => {
   const file = fileField.files[0];
   if (!file) return;
-  pendingFile = file;
 
   ocrStatus.classList.remove("hidden");
   ocrTextDetails.classList.add("hidden");
@@ -182,16 +162,6 @@ form.addEventListener("submit", async (e) => {
   };
 
   try {
-    if (pendingFile) {
-      if (existingScorecard) await deleteScorecard(existingScorecard.path);
-      const uploaded = await uploadScorecard(currentUid, pendingFile);
-      data.scorecardUrl = uploaded.url;
-      data.scorecardPath = uploaded.path;
-    } else if (existingScorecard) {
-      data.scorecardUrl = existingScorecard.url;
-      data.scorecardPath = existingScorecard.path;
-    }
-
     if (idField.value) {
       await updateRound(currentUid, idField.value, data);
     } else {

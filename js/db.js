@@ -1,6 +1,5 @@
 import {
   db,
-  storage,
   collection,
   doc,
   addDoc,
@@ -10,11 +9,7 @@ import {
   getDoc,
   getDocs,
   query,
-  orderBy,
-  ref,
-  uploadBytes,
-  getDownloadURL,
-  deleteObject
+  orderBy
 } from "./firebase.js";
 
 function expensesRef(uid) {
@@ -70,21 +65,4 @@ export async function getBudget(uid) {
 
 export async function setBudget(uid, data) {
   return setDoc(budgetRef(uid), data, { merge: true });
-}
-
-export async function uploadScorecard(uid, file) {
-  const path = `users/${uid}/scorecards/${Date.now()}_${file.name}`;
-  const fileRef = ref(storage, path);
-  await uploadBytes(fileRef, file);
-  const url = await getDownloadURL(fileRef);
-  return { url, path };
-}
-
-export async function deleteScorecard(path) {
-  if (!path) return;
-  try {
-    await deleteObject(ref(storage, path));
-  } catch (e) {
-    console.warn("Konnte Scorecard-Datei nicht löschen:", e);
-  }
 }

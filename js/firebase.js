@@ -19,29 +19,20 @@ import {
   query,
   orderBy
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import {
-  getStorage,
-  ref,
-  uploadBytes,
-  getDownloadURL,
-  deleteObject
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 import { firebaseConfig, isFirebaseConfigured } from "./firebase-config.js";
 
-let app, auth, db, storage;
+let app, auth, db;
 
 if (isFirebaseConfigured) {
   app = initializeApp(firebaseConfig);
   auth = getAuth(app);
   db = getFirestore(app);
-  storage = getStorage(app);
 }
 
 export {
   isFirebaseConfigured,
   auth,
   db,
-  storage,
   GoogleAuthProvider,
   signInWithPopup,
   signOut,
@@ -55,9 +46,5 @@ export {
   getDoc,
   getDocs,
   query,
-  orderBy,
-  ref,
-  uploadBytes,
-  getDownloadURL,
-  deleteObject
+  orderBy
 };
