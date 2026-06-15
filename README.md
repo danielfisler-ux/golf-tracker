@@ -10,7 +10,7 @@ Synchronisation über ein kostenloses Firebase-Projekt (kein eigener Server nöt
 - Unterscheidung einmalig / monatlich / jährlich wiederkehrend
 - Übersicht/Dashboard: Ausgaben aktuelles Jahr & aktueller Monat, aktuelles Handicap, letzte 5 Runden
 - Runden erfassen: Club, Datum, Anzahl Löcher, Brutto- und Netto-Resultat
-- Scorecard als Foto oder PDF hochladen, automatische Texterkennung (OCR) als Ausfüllhilfe
+- Scorecard fotografieren oder als PDF auswählen, automatische Texterkennung (OCR, läuft im Browser) als Ausfüllhilfe – die Datei selbst wird nicht gespeichert
 - Statistiken nach Kalenderjahr mit Jahres-/Monatsfilter (Ausgaben nach Kategorie, pro Monat, Score-Verlauf)
 - Budgetziele mit Fortschrittsanzeige, Handicap-Eingabe
 - Installierbar als App (Add to Home Screen) auf iOS/Android und Desktop, mit Offline-Caching
@@ -24,15 +24,16 @@ kostenlose "Spark"-Tarif reicht für privaten Gebrauch problemlos aus.
 2. **Projekt erstellen** → einen Namen vergeben (z.B. "golf-tracker") → Google Analytics kannst du deaktivieren.
 3. Im Projekt links auf **Build → Authentication** → "Get started" → Anbieter **Google** aktivieren.
 4. Links auf **Build → Firestore Database** → "Datenbank erstellen" → Modus **Produktion** → Standort wählen (z.B. `eur3 (europe-west)`).
-5. Links auf **Build → Storage** → "Los geht's" → gleicher Standort wie Firestore.
-6. Zurück auf die **Projektübersicht** (Symbol oben links) → "</> Web-App hinzufügen" → Namen vergeben (z.B. "golf-tracker-web") → **Hosting nicht nötig**.
-7. Du erhältst ein Code-Snippet mit `firebaseConfig = { apiKey: ..., authDomain: ..., ... }`. Diese Werte brauchst du im nächsten Schritt.
+5. Zurück auf die **Projektübersicht** (Symbol oben links) → "</> Web-App hinzufügen" → Namen vergeben (z.B. "golf-tracker-web") → **Hosting nicht nötig**.
+6. Du erhältst ein Code-Snippet mit `firebaseConfig = { apiKey: ..., authDomain: ..., ... }`. Diese Werte brauchst du im nächsten Schritt.
+
+> Hinweis: **Firebase Storage** wird bewusst nicht verwendet, da dafür seit Ende 2024
+> der kostenpflichtige "Blaze"-Tarif (mit hinterlegter Kreditkarte) nötig ist. Scorecards
+> werden daher nur lokal im Browser für die Texterkennung verwendet, aber nicht gespeichert.
 
 ### Sicherheitsregeln setzen
 
-Damit jede:r Nutzer:in nur die eigenen Daten lesen/schreiben kann:
-
-**Firestore** (Build → Firestore Database → Regeln):
+Damit jede:r Nutzer:in nur die eigenen Daten lesen/schreiben kann (Build → Firestore Database → Regeln):
 
 ```
 rules_version = '2';
@@ -45,20 +46,7 @@ service cloud.firestore {
 }
 ```
 
-**Storage** (Build → Storage → Regeln):
-
-```
-rules_version = '2';
-service firebase.storage {
-  match /b/{bucket}/o {
-    match /users/{userId}/{allPaths=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-  }
-}
-```
-
-Jeweils auf "Veröffentlichen" klicken.
+Auf "Veröffentlichen" klicken.
 
 ## 2. Konfiguration eintragen
 
@@ -108,17 +96,16 @@ sobald du dich mit demselben Google-Konto anmeldest.
 
 ## 5. Hinweise zur Texterkennung (OCR)
 
-Beim Hochladen eines Fotos oder PDFs der Scorecard versucht die App, Datum und
+Beim Auswählen eines Fotos oder PDFs der Scorecard versucht die App, Datum und
 Golfclub-Namen automatisch zu erkennen (mit Tesseract.js, läuft komplett im Browser,
-keine Daten werden an Dritte gesendet). Die Erkennung ist ein Hilfsmittel – bitte
-Datum, Club, Brutto- und Netto-Resultat vor dem Speichern immer prüfen, da OCR
-insbesondere bei handschriftlichen Scorekarten nicht immer korrekt ist.
+keine Daten werden an Dritte gesendet oder gespeichert). Die Erkennung ist ein
+Hilfsmittel – bitte Datum, Club, Par und Anzahl Schläge vor dem Speichern immer prüfen,
+da OCR insbesondere bei handschriftlichen Scorekarten nicht immer korrekt ist.
 
 ## 6. Kosten
 
 Der Firebase "Spark"-Tarif ist dauerhaft kostenlos und beinhaltet u.a.:
 - Firestore: 1 GiB Speicher, 50'000 Lesevorgänge/Tag
-- Storage: 5 GB Speicher
 - Authentication: unbegrenzt
 
 Für den privaten Gebrauch (eine Person, ein paar hundert Einträge/Jahr) wird dieses
