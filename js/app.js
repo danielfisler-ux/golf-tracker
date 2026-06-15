@@ -3,7 +3,7 @@ import { login, logout, watchAuth } from "./auth.js";
 import { initExpenses, getExpenses } from "./expenses.js";
 import { initRounds, getRounds } from "./rounds.js";
 import { renderStats } from "./stats.js";
-import { initBudget, renderBudgetProgress } from "./budget.js";
+import { initBudget, renderBudgetProgress, getSettings } from "./budget.js";
 import { startOfMonth, monthlyContribution, formatChf } from "./calc.js";
 
 const views = ["dashboard", "expenses", "rounds", "stats", "budget"];
@@ -35,6 +35,7 @@ function showView(name) {
   for (const btn of bottomnav.querySelectorAll(".navbtn")) {
     btn.classList.toggle("active", btn.dataset.view === name);
   }
+  if (name === "dashboard") renderDashboard();
   if (name === "stats") renderStats(getExpenses(), getRounds());
   if (name === "budget") renderBudgetProgress(getExpenses());
 }
@@ -62,13 +63,13 @@ function renderDashboard() {
   }
 
   const roundsThisYear = rounds.filter((r) => new Date(r.date).getFullYear() === now.getFullYear());
-  const bestGross = rounds.reduce((best, r) => (best === null || r.scoreGross < best ? r.scoreGross : best), null);
+  const handicap = getSettings().currentHandicap;
 
   const cards = [
-    { label: "Ausgaben diesen Monat", value: formatChf(monthTotal) },
     { label: "Ausgaben dieses Jahr", value: formatChf(yearTotal) },
-    { label: "Runden dieses Jahr", value: String(roundsThisYear.length) },
-    { label: "Bestes Brutto-Resultat", value: bestGross !== null ? String(bestGross) : "–" }
+    { label: "Ausgaben diesen Monat", value: formatChf(monthTotal) },
+    { label: "Aktuelles Handicap", value: handicap != null ? String(handicap) : "–" },
+    { label: "Runden dieses Jahr", value: String(roundsThisYear.length) }
   ];
 
   const cardsEl = document.getElementById("dashboardCards");
@@ -80,36 +81,34 @@ function renderDashboard() {
     cardsEl.appendChild(div);
   }
 
-  const recentList = document.getElementById("recentList");
-  recentList.innerHTML = "";
-  const recentItems = [
-    ...expenses.map((e) => ({ type: "expense", date: e.date, label: e.description, value: formatChf(e.amount) })),
-    ...rounds.map((r) => ({ type: "round", date: r.date, label: r.club, value: `${r.scoreGross} Brutto` }))
-  ]
+  const recentRoundsList = document.getElementById("recentRoundsList");
+  recentRoundsList.innerHTML = "";
+  const recentRounds = [...rounds]
     .sort((a, b) => new Date(b.date) - new Date(a.date))
-    .slice(0, 8);
+    .slice(0, 5);
 
-  if (recentItems.length === 0) {
-    recentList.innerHTML = '<li class="hint">Noch keine Daten erfasst.</li>';
+  if (recentRounds.length === 0) {
+    recentRoundsList.innerHTML = '<li class="hint">Noch keine Runden erfasst.</li>';
   }
 
-  for (const item of recentItems) {
+  for (const round of recentRounds) {
     const li = document.createElement("li");
     li.className = "list-item";
-    const icon = item.type === "expense" ? "💰" : "⛳";
+    const netPart = round.scoreNet != null ? ` / ${round.scoreNet}` : "";
     li.innerHTML = `
       <div class="meta">
-        <span class="title">${icon} ${item.label}</span>
-        <span class="sub">${new Date(item.date).toLocaleDateString("de-CH")}</span>
+        <span class="title">⛳ ${round.club}</span>
+        <span class="sub">${new Date(round.date).toLocaleDateString("de-CH")}</span>
       </div>
-      <div class="right"><span class="amount">${item.value}</span></div>
+      <div class="right"><span class="amount" title="Brutto / Netto">${round.scoreGross}${netPart}</span></div>
     `;
-    recentList.appendChild(li);
+    recentRoundsList.appendChild(li);
   }
 }
 
 document.getElementById("budgetForm").addEventListener("budget-saved", () => {
   renderBudgetProgress(getExpenses());
+  renderDashboard();
 });
 
 function showLoggedOut() {

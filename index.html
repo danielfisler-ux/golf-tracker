@@ -35,8 +35,8 @@
     <h1>Übersicht</h1>
     <div class="cards-grid" id="dashboardCards"></div>
     <div class="card">
-      <h2>Letzte Aktivitäten</h2>
-      <ul id="recentList" class="list"></ul>
+      <h2>Letzte 5 Runden</h2>
+      <ul id="recentRoundsList" class="list"></ul>
     </div>
   </section>
 
@@ -53,6 +53,8 @@
           <select id="expenseCategory" required>
             <option value="Greenfee">Greenfee</option>
             <option value="Mitgliedschaft">Mitgliedschaft</option>
+            <option value="Driving Range">Driving Range</option>
+            <option value="Golf Pro Stunde">Golf Pro Stunde</option>
             <option value="Ausrüstung">Ausrüstung (Schläger etc.)</option>
             <option value="Bälle & Zubehör">Bälle &amp; Zubehör (Bälle, Tees, ...)</option>
             <option value="Kleidung">Kleidung</option>
@@ -87,6 +89,8 @@
           <option value="all">Alle Kategorien</option>
           <option value="Greenfee">Greenfee</option>
           <option value="Mitgliedschaft">Mitgliedschaft</option>
+          <option value="Driving Range">Driving Range</option>
+          <option value="Golf Pro Stunde">Golf Pro Stunde</option>
           <option value="Ausrüstung">Ausrüstung</option>
           <option value="Bälle & Zubehör">Bälle &amp; Zubehör</option>
           <option value="Kleidung">Kleidung</option>
@@ -151,6 +155,31 @@
   <section id="view-stats" class="view hidden">
     <h1>Statistik</h1>
     <div class="card">
+      <h2>Zeitraum</h2>
+      <div class="form" style="flex-direction: row; gap: 16px;">
+        <label style="flex: 1;">Jahr
+          <select id="statsYear"></select>
+        </label>
+        <label style="flex: 1;">Monat
+          <select id="statsMonth">
+            <option value="all">Alle Monate</option>
+            <option value="0">Januar</option>
+            <option value="1">Februar</option>
+            <option value="2">März</option>
+            <option value="3">April</option>
+            <option value="4">Mai</option>
+            <option value="5">Juni</option>
+            <option value="6">Juli</option>
+            <option value="7">August</option>
+            <option value="8">September</option>
+            <option value="9">Oktober</option>
+            <option value="10">November</option>
+            <option value="11">Dezember</option>
+          </select>
+        </label>
+      </div>
+    </div>
+    <div class="card">
       <h2>Ausgaben nach Kategorie</h2>
       <canvas id="categoryChart"></canvas>
     </div>
@@ -174,6 +203,9 @@
         </label>
         <label>Monatsbudget (CHF)
           <input type="number" id="budgetMonthly" step="0.01" min="0" placeholder="z.B. 250">
+        </label>
+        <label>Aktuelles Handicap
+          <input type="number" id="currentHandicap" step="0.1" placeholder="z.B. 18.4">
         </label>
         <div class="form-actions">
           <button type="submit" class="btn btn-primary">Speichern</button>

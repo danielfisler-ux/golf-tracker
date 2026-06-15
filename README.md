@@ -6,12 +6,13 @@ Synchronisation über ein kostenloses Firebase-Projekt (kein eigener Server nöt
 
 ## Funktionen
 
-- Ausgaben erfassen: Greenfee, Mitgliedschaft, Ausrüstung, Bälle & Zubehör, Kleidung, Reise, Sonstiges
+- Ausgaben erfassen: Greenfee, Mitgliedschaft, Driving Range, Golf Pro Stunde, Ausrüstung, Bälle & Zubehör, Kleidung, Reise, Sonstiges
 - Unterscheidung einmalig / monatlich / jährlich wiederkehrend
+- Übersicht/Dashboard: Ausgaben aktuelles Jahr & aktueller Monat, aktuelles Handicap, letzte 5 Runden
 - Runden erfassen: Club, Datum, Anzahl Löcher, Brutto- und Netto-Resultat
 - Scorecard als Foto oder PDF hochladen, automatische Texterkennung (OCR) als Ausfüllhilfe
-- Statistiken (Ausgaben nach Kategorie, pro Monat, Score-Verlauf)
-- Budgetziele mit Fortschrittsanzeige
+- Statistiken nach Kalenderjahr mit Jahres-/Monatsfilter (Ausgaben nach Kategorie, pro Monat, Score-Verlauf)
+- Budgetziele mit Fortschrittsanzeige, Handicap-Eingabe
 - Installierbar als App (Add to Home Screen) auf iOS/Android und Desktop, mit Offline-Caching
 
 ## 1. Firebase-Projekt einrichten (einmalig, ca. 10 Minuten)

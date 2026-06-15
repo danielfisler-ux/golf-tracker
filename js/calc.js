@@ -17,6 +17,14 @@ export function monthlyContribution(expense, target) {
   return monthKey(start) === monthKey(target) ? expense.amount : 0;
 }
 
+export function yearlyContribution(expense, year) {
+  let total = 0;
+  for (let m = 0; m < 12; m++) {
+    total += monthlyContribution(expense, new Date(year, m, 1));
+  }
+  return total;
+}
+
 export function estimateAnnualCost(expense) {
   if (expense.recurrence === "monthly") return expense.amount * 12;
   if (expense.recurrence === "yearly") return expense.amount;

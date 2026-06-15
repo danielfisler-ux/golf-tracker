@@ -2,17 +2,25 @@ import { getBudget, setBudget } from "./db.js";
 import { startOfMonth, monthlyContribution, formatChf } from "./calc.js";
 
 let currentUid = null;
+let settings = { yearlyTarget: 0, monthlyTarget: 0, currentHandicap: null };
 
 const form = document.getElementById("budgetForm");
 const yearlyField = document.getElementById("budgetYearly");
 const monthlyField = document.getElementById("budgetMonthly");
+const handicapField = document.getElementById("currentHandicap");
 const progressEl = document.getElementById("budgetProgress");
 
 export async function initBudget(uid) {
   currentUid = uid;
   const budget = await getBudget(uid);
-  yearlyField.value = budget.yearlyTarget || "";
-  monthlyField.value = budget.monthlyTarget || "";
+  settings = { yearlyTarget: 0, monthlyTarget: 0, currentHandicap: null, ...budget };
+  yearlyField.value = settings.yearlyTarget || "";
+  monthlyField.value = settings.monthlyTarget || "";
+  handicapField.value = settings.currentHandicap ?? "";
+}
+
+export function getSettings() {
+  return settings;
 }
 
 export function renderBudgetProgress(expenses) {
@@ -62,9 +70,11 @@ function buildProgressItem(label, value, target) {
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
-  await setBudget(currentUid, {
+  settings = {
     yearlyTarget: parseFloat(yearlyField.value) || 0,
-    monthlyTarget: parseFloat(monthlyField.value) || 0
-  });
+    monthlyTarget: parseFloat(monthlyField.value) || 0,
+    currentHandicap: handicapField.value !== "" ? parseFloat(handicapField.value) : null
+  };
+  await setBudget(currentUid, settings);
   form.dispatchEvent(new CustomEvent("budget-saved", { bubbles: true }));
 });
