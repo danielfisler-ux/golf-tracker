@@ -13,7 +13,9 @@ const ocrStatus = document.getElementById("ocrStatus");
 const ocrTextDetails = document.getElementById("ocrTextDetails");
 const ocrTextEl = document.getElementById("ocrText");
 const clubField = document.getElementById("roundClub");
+const teeField = document.getElementById("roundTee");
 const dateField = document.getElementById("roundDate");
+const phcpField = document.getElementById("roundPhcp");
 const holesField = document.getElementById("roundHoles");
 const grossField = document.getElementById("roundGross");
 const netField = document.getElementById("roundNet");
@@ -51,7 +53,9 @@ function resetForm() {
 function fillForm(round) {
   idField.value = round.id;
   clubField.value = round.club;
+  teeField.value = round.tee || "";
   dateField.value = round.date;
+  phcpField.value = round.phcp ?? "";
   holesField.value = String(round.holes);
   grossField.value = round.scoreGross ?? "";
   netField.value = round.scoreNet ?? "";
@@ -85,7 +89,9 @@ function render() {
     title.textContent = round.club;
     const sub = document.createElement("span");
     sub.className = "sub";
-    sub.textContent = `${formatDate(round.date)} · ${round.holes} Loch`;
+    const teePart = round.tee ? ` · Tee ${round.tee}` : "";
+    const phcpPart = round.phcp != null ? ` · PHCP ${round.phcp}` : "";
+    sub.textContent = `${formatDate(round.date)} · ${round.holes} Loch${teePart}${phcpPart}`;
     meta.appendChild(title);
     meta.appendChild(sub);
 
@@ -141,6 +147,11 @@ fileField.addEventListener("change", async () => {
 
     if (parsed.date) dateField.value = parsed.date;
     if (parsed.club && !clubField.value) clubField.value = parsed.club;
+    if (parsed.tee && !teeField.value) teeField.value = parsed.tee;
+    if (parsed.phcp != null && !phcpField.value) phcpField.value = parsed.phcp;
+    if (parsed.holes && !idField.value) holesField.value = String(parsed.holes);
+    if (parsed.par != null && !grossField.value) grossField.value = parsed.par;
+    if (parsed.strokes != null && !netField.value) netField.value = parsed.strokes;
 
     ocrStatus.textContent = "Texterkennung abgeschlossen. Bitte Werte unten prüfen und ergänzen.";
   } catch (err) {
@@ -154,7 +165,9 @@ form.addEventListener("submit", async (e) => {
 
   const data = {
     club: clubField.value.trim(),
+    tee: teeField.value.trim(),
     date: dateField.value,
+    phcp: phcpField.value ? parseInt(phcpField.value, 10) : null,
     holes: parseInt(holesField.value, 10),
     scoreGross: parseInt(grossField.value, 10),
     scoreNet: netField.value ? parseInt(netField.value, 10) : null,
