@@ -142,6 +142,16 @@
         <label>Anzahl Schläge
           <input type="number" id="roundNet" step="1" placeholder="z.B. 92">
         </label>
+        <label>Stableford Brutto
+          <input type="number" id="roundSfBrutto" step="1" min="0" placeholder="z.B. 3">
+        </label>
+        <label>Stableford Netto
+          <input type="number" id="roundSfNetto" step="1" min="0" placeholder="z.B. 19">
+        </label>
+        <label class="check-label">
+          <input type="checkbox" id="roundCounts">
+          Handicapwirksam
+        </label>
         <label>Notizen
           <textarea id="roundNotes" rows="2" placeholder="optional"></textarea>
         </label>
@@ -160,6 +170,43 @@
 
   <section id="view-stats" class="view hidden">
     <h1>Statistik</h1>
+    <div class="card">
+      <h2>Handicap</h2>
+      <div class="hcp-grid">
+        <div class="hcp-tile">
+          <div class="hcp-label">Effektiv</div>
+          <div class="hcp-sub">nur handicapwirksame Runden</div>
+          <div class="hcp-value" id="hcpEffective">–</div>
+          <div class="hint" id="hcpEffectiveInfo"></div>
+        </div>
+        <div class="hcp-tile">
+          <div class="hcp-label">Alle Resultate</div>
+          <div class="hcp-sub">wenn alle Runden zählen würden</div>
+          <div class="hcp-value" id="hcpAll">–</div>
+          <div class="hint" id="hcpAllInfo"></div>
+        </div>
+      </div>
+      <p class="hint" id="hcpNote"></p>
+    </div>
+    <div class="card">
+      <h2>Golfpark Waldkirch nach Platz (9 Loch)</h2>
+      <div class="table-wrap">
+        <table class="stat-table">
+          <thead>
+            <tr>
+              <th>Platz</th>
+              <th>Gespielt</th>
+              <th>Par</th>
+              <th>Höchster</th>
+              <th>Niedrigster</th>
+              <th>Mittelwert</th>
+            </tr>
+          </thead>
+          <tbody id="waldkirchBody"></tbody>
+        </table>
+      </div>
+      <p class="hint">Höchster, Niedrigster und Mittelwert = Stableford netto pro 9-Loch-Runde, alle erfassten Runden.</p>
+    </div>
     <div class="card">
       <h2>Zeitraum</h2>
       <div class="form" style="flex-direction: row; gap: 16px;">
