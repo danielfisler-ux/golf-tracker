@@ -35,8 +35,14 @@
     <h1>Übersicht</h1>
     <div class="cards-grid" id="dashboardCards"></div>
     <div class="card">
-      <h2>Letzte 5 Runden</h2>
+      <h2>Letzte Runden</h2>
+      <p class="hint">Par / Anzahl Schläge / Stableford netto</p>
       <ul id="recentRoundsList" class="list"></ul>
+      <div id="roundsPager" class="pager hidden">
+        <button type="button" id="roundsNewer" class="btn btn-secondary btn-small">‹ Neuere</button>
+        <span id="roundsPageInfo" class="hint"></span>
+        <button type="button" id="roundsOlder" class="btn btn-secondary btn-small">Ältere ›</button>
+      </div>
     </div>
   </section>
 
