@@ -42,7 +42,8 @@ async function reload() {
 function resetForm() {
   idField.value = "";
   form.reset();
-  dateField.value = new Date().toISOString().slice(0, 10);
+  const now = new Date();
+  dateField.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
   recurrenceField.value = "once";
   formTitle.textContent = "Neue Ausgabe";
   cancelBtn.classList.add("hidden");
