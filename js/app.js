@@ -3,8 +3,16 @@ import { login, logout, watchAuth } from "./auth.js";
 import { initExpenses, getExpenses } from "./expenses.js";
 import { initRounds, getRounds } from "./rounds.js";
 import { renderStats } from "./stats.js";
-import { initBudget, renderBudgetProgress, getSettings } from "./budget.js";
+import { initBudget, renderBudgetProgress } from "./budget.js";
+import { computeHandicap } from "./handicap.js";
 import { startOfMonth, monthlyContribution, formatChf } from "./calc.js";
+
+const PAGE_SIZE = 5;
+let roundsPage = 0;
+
+function fmtHcp(x) {
+  return x == null ? "–" : x.toLocaleString("de-CH", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+}
 
 const views = ["dashboard", "expenses", "rounds", "stats", "budget"];
 
@@ -35,7 +43,7 @@ function showView(name) {
   for (const btn of bottomnav.querySelectorAll(".navbtn")) {
     btn.classList.toggle("active", btn.dataset.view === name);
   }
-  if (name === "dashboard") renderDashboard();
+  if (name === "dashboard") { roundsPage = 0; renderDashboard(); }
   if (name === "stats") renderStats(getExpenses(), getRounds());
   if (name === "budget") renderBudgetProgress(getExpenses());
 }
@@ -63,12 +71,14 @@ function renderDashboard() {
   }
 
   const roundsThisYear = rounds.filter((r) => new Date(r.date).getFullYear() === now.getFullYear());
-  const handicap = getSettings().currentHandicap;
+  const hcpEff = computeHandicap(rounds, { onlyRelevant: true }).index;
+  const hcpAll = computeHandicap(rounds, { onlyRelevant: false }).index;
 
   const cards = [
     { label: "Ausgaben dieses Jahr", value: formatChf(yearTotal) },
     { label: "Ausgaben diesen Monat", value: formatChf(monthTotal) },
-    { label: "Aktuelles Handicap", value: handicap != null ? String(handicap) : "–" },
+    { label: "Handicap (handicapwirksam)", value: fmtHcp(hcpEff) },
+    { label: "Handicap (alle Runden)", value: fmtHcp(hcpAll) },
     { label: "Runden dieses Jahr", value: String(roundsThisYear.length) }
   ];
 
@@ -83,9 +93,16 @@ function renderDashboard() {
 
   const recentRoundsList = document.getElementById("recentRoundsList");
   recentRoundsList.innerHTML = "";
-  const recentRounds = [...rounds]
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
-    .slice(0, 5);
+  const sorted = [...rounds].sort((a, b) => new Date(b.date) - new Date(a.date));
+  const pages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
+  roundsPage = Math.min(Math.max(roundsPage, 0), pages - 1);
+  const recentRounds = sorted.slice(roundsPage * PAGE_SIZE, (roundsPage + 1) * PAGE_SIZE);
+
+  const pager = document.getElementById("roundsPager");
+  pager.classList.toggle("hidden", sorted.length <= PAGE_SIZE);
+  document.getElementById("roundsPageInfo").textContent = `${roundsPage + 1} / ${pages}`;
+  document.getElementById("roundsNewer").disabled = roundsPage === 0;
+  document.getElementById("roundsOlder").disabled = roundsPage >= pages - 1;
 
   if (recentRounds.length === 0) {
     recentRoundsList.innerHTML = '<li class="hint">Noch keine Runden erfasst.</li>';
@@ -95,16 +112,20 @@ function renderDashboard() {
     const li = document.createElement("li");
     li.className = "list-item";
     const netPart = round.scoreNet != null ? ` / ${round.scoreNet}` : "";
+    const sfPart = round.stablefordNetto != null ? ` / ${round.stablefordNetto}` : "";
     li.innerHTML = `
       <div class="meta">
         <span class="title">⛳ ${round.club}</span>
         <span class="sub">${new Date(round.date).toLocaleDateString("de-CH")}</span>
       </div>
-      <div class="right"><span class="amount" title="Par / Anzahl Schläge">${round.scoreGross}${netPart}</span></div>
+      <div class="right"><span class="amount" title="Par / Anzahl Schläge / Stableford netto">${round.scoreGross}${netPart}${sfPart}</span></div>
     `;
     recentRoundsList.appendChild(li);
   }
 }
+
+document.getElementById("roundsNewer").addEventListener("click", () => { roundsPage--; renderDashboard(); });
+document.getElementById("roundsOlder").addEventListener("click", () => { roundsPage++; renderDashboard(); });
 
 document.getElementById("budgetForm").addEventListener("budget-saved", () => {
   renderBudgetProgress(getExpenses());
