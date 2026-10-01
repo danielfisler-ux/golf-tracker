@@ -19,6 +19,9 @@ const phcpField = document.getElementById("roundPhcp");
 const holesField = document.getElementById("roundHoles");
 const grossField = document.getElementById("roundGross");
 const netField = document.getElementById("roundNet");
+const sfBruttoField = document.getElementById("roundSfBrutto");
+const sfNettoField = document.getElementById("roundSfNetto");
+const countsField = document.getElementById("roundCounts");
 const notesField = document.getElementById("roundNotes");
 const cancelBtn = document.getElementById("roundCancelBtn");
 const listEl = document.getElementById("roundList");
@@ -39,10 +42,16 @@ async function reload() {
   if (onChangeCallback) onChangeCallback();
 }
 
+function todayLocal() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 function resetForm() {
   idField.value = "";
   form.reset();
-  dateField.value = new Date().toISOString().slice(0, 10);
+  dateField.value = todayLocal();
+  countsField.checked = false;
   holesField.value = "18";
   formTitle.textContent = "Neue Runde";
   cancelBtn.classList.add("hidden");
@@ -59,6 +68,9 @@ function fillForm(round) {
   holesField.value = String(round.holes);
   grossField.value = round.scoreGross ?? "";
   netField.value = round.scoreNet ?? "";
+  sfBruttoField.value = round.stablefordBrutto ?? "";
+  sfNettoField.value = round.stablefordNetto ?? "";
+  countsField.checked = !!round.handicapRelevant;
   notesField.value = round.notes || "";
   formTitle.textContent = "Runde bearbeiten";
   cancelBtn.classList.remove("hidden");
@@ -91,9 +103,18 @@ function render() {
     sub.className = "sub";
     const teePart = round.tee ? ` · Tee ${round.tee}` : "";
     const phcpPart = round.phcp != null ? ` · PHCP ${round.phcp}` : "";
-    sub.textContent = `${formatDate(round.date)} · ${round.holes} Loch${teePart}${phcpPart}`;
+    const sfPart = round.stablefordBrutto != null || round.stablefordNetto != null
+      ? ` · Stableford ${round.stablefordBrutto ?? "–"} brutto / ${round.stablefordNetto ?? "–"} netto`
+      : "";
+    sub.textContent = `${formatDate(round.date)} · ${round.holes} Loch${teePart}${phcpPart}${sfPart}`;
     meta.appendChild(title);
     meta.appendChild(sub);
+    if (round.handicapRelevant) {
+      const badge = document.createElement("span");
+      badge.className = "badge";
+      badge.textContent = "Handicapwirksam";
+      meta.appendChild(badge);
+    }
 
     const right = document.createElement("div");
     right.className = "right";
@@ -152,6 +173,9 @@ fileField.addEventListener("change", async () => {
     if (parsed.holes && !idField.value) holesField.value = String(parsed.holes);
     if (parsed.par != null && !grossField.value) grossField.value = parsed.par;
     if (parsed.strokes != null && !netField.value) netField.value = parsed.strokes;
+    if (parsed.sfBrutto != null && !sfBruttoField.value) sfBruttoField.value = parsed.sfBrutto;
+    if (parsed.sfNetto != null && !sfNettoField.value) sfNettoField.value = parsed.sfNetto;
+    if (parsed.platz && !notesField.value) notesField.value = "Platz: " + parsed.platz;
 
     ocrStatus.textContent = "Texterkennung abgeschlossen. Bitte Werte unten prüfen und ergänzen.";
   } catch (err) {
@@ -171,6 +195,9 @@ form.addEventListener("submit", async (e) => {
     holes: parseInt(holesField.value, 10),
     scoreGross: parseInt(grossField.value, 10),
     scoreNet: netField.value ? parseInt(netField.value, 10) : null,
+    stablefordBrutto: sfBruttoField.value !== "" ? parseInt(sfBruttoField.value, 10) : null,
+    stablefordNetto: sfNettoField.value !== "" ? parseInt(sfNettoField.value, 10) : null,
+    handicapRelevant: countsField.checked,
     notes: notesField.value.trim()
   };
 
