@@ -1,4 +1,4 @@
-const CACHE_NAME = 'golf-tracker-v5';
+const CACHE_NAME = 'golf-tracker-v7';
 const APP_SHELL = [
   './',
   './index.html',
@@ -14,6 +14,7 @@ const APP_SHELL = [
   './js/stats.js',
   './js/budget.js',
   './js/ocr.js',
+  './js/handicap.js',
   './icons/icon-192.svg',
   './icons/icon-512.svg'
 ];
