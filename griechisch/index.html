@@ -85,6 +85,7 @@ input.answer:focus{outline:none;border-color:var(--accent)}
 .seg button{flex:1;border:0;background:none;padding:9px;border-radius:9px;color:var(--accent);font-weight:600;cursor:pointer;font-size:.9rem}
 .seg button.active{background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.12)}
 .hidden{display:none!important}
+u{text-decoration:none;font-weight:800;border-bottom:2px solid var(--accent)}
 .tip{font-size:.85rem;color:var(--muted);line-height:1.45}
 </style>
 </head>
@@ -98,8 +99,8 @@ input.answer:focus{outline:none;border-color:var(--accent)}
   <button data-view="learn" class="active"><span class="i">📖</span>Lernen</button>
   <button data-view="cards"><span class="i">🃏</span>Karten</button>
   <button data-view="quiz"><span class="i">❓</span>Quiz</button>
-  <button data-view="write"><span class="i">✍️</span>Schreiben</button>
-  <button data-view="alpha"><span class="i">Αα</span>Alphabet</button>
+  <button data-view="listen"><span class="i">👂</span>Hören</button>
+  <button data-view="sounds"><span class="i">🗣️</span>Aussprache</button>
 </nav>
 
 <script>
@@ -235,18 +236,18 @@ const CATS = [
  ]},
 ];
 
-const ALPHA = [
- ["Α α","Alfa","a","wie «a»"],["Β β","Vita","v","wie «w» in Wasser"],["Γ γ","Gama","g / j","weiches «g», vor e/i wie «j»"],
- ["Δ δ","Delta","dh","wie englisches «th» in «this»"],["Ε ε","Epsilon","e","wie «e»"],["Ζ ζ","Zita","z","stimmhaftes «s» wie in «Rose»"],
- ["Η η","Ita","i","wie «i»"],["Θ θ","Thita","th","wie englisches «th» in «think»"],["Ι ι","Jota","i","wie «i»"],
- ["Κ κ","Kapa","k","wie «k»"],["Λ λ","Lamda","l","wie «l»"],["Μ μ","Mi","m","wie «m»"],
- ["Ν ν","Ni","n","wie «n»"],["Ξ ξ","Xi","x","wie «x» (ks)"],["Ο ο","Omikron","o","wie «o»"],
- ["Π π","Pi","p","wie «p»"],["Ρ ρ","Ro","r","gerolltes «r»"],["Σ σ ς","Sigma","s","wie «ss»; ς am Wortende"],
- ["Τ τ","Taf","t","wie «t»"],["Υ υ","Ipsilon","i","wie «i»"],["Φ φ","Fi","f","wie «f»"],
- ["Χ χ","Chi","ch","wie «ch» in «Bach» / «ich»"],["Ψ ψ","Psi","ps","wie «ps»"],["Ω ω","Omega","o","wie «o»"],
-];
-const COMBOS = [
- ["ου","u"],["αι","e"],["ει / οι","i"],["αυ","av / af"],["ευ","ev / ef"],["μπ","b"],["ντ","d"],["γκ","g"],["τσ","ts"],["τζ","dz"]
+/* Aussprache-Tipps (Umschrift → wie man es spricht) */
+const SOUNDS = [
+ ["ch","wie «ch» in «Bach» – vor e/i weicher wie in «ich»","Óchi, efcharistó","Όχι, ευχαριστώ"],
+ ["th","wie englisches «th» in «think» (Zunge zwischen die Zähne)","thálassa","θάλασσα"],
+ ["j","wie deutsches «j» in «ja»","Ja sas, jatró","Γεια σας, γιατρό"],
+ ["v","wie deutsches «w» in «Wasser»","Voíthia, ávrio","Βοήθεια, αύριο"],
+ ["s","immer scharf wie «ss» in «Wasser»","Parakaló, símera","Παρακαλώ, σήμερα"],
+ ["z","weiches, summendes «s» wie in «Rose»","Káni zésti","Κάνει ζέστη"],
+ ["r","leicht gerollt mit der Zungenspitze","Kaliméra","Καλημέρα"],
+ ["e / o","immer kurz und offen, nie lang gezogen","Ne, tóra","Ναι, τώρα"],
+ ["b / d / g","wie im Deutschen – im Griechischen aus zwei Buchstaben gebildet","bíra, Edáxi","μπίρα, Εντάξει"],
+ ["ts","wie «z» in «Zeit»","Tsái (Tee)","Τσάι"],
 ];
 
 /* Alle Einträge mit IDs */
@@ -257,7 +258,7 @@ CATS.forEach(c=>c.items.forEach((it,i)=>{
 
 /* ======================= SPEICHER ======================= */
 const STORE_KEY = "griechisch_v1";
-let S = {box:{}, cat:"all", stats:{right:0,wrong:0}, streak:{last:"",days:0}};
+let S = {box:{}, cat:"all", showGr:false, stats:{right:0,wrong:0}, streak:{last:"",days:0}};
 try{ const raw = localStorage.getItem(STORE_KEY); if(raw) S = Object.assign(S, JSON.parse(raw)); }catch(e){}
 function save(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(S)); }catch(e){} }
 const MAXBOX = 5;
@@ -313,24 +314,6 @@ document.addEventListener("click", e=>{
   if(b){ e.stopPropagation(); speak(b.dataset.say); }
 });
 
-function norm(s){
-  return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"")
-    .replace(/ς/g,"σ").replace(/\(.*?\)/g,"").replace(/[^a-zα-ω0-9 ]/g," ")
-    .replace(/y/g,"i").replace(/h/g,"").replace(/\s+/g," ").trim();
-}
-function lev(a,b){
-  const m=a.length,n=b.length; if(!m) return n; if(!n) return m;
-  let p=Array.from({length:n+1},(_,i)=>i);
-  for(let i=1;i<=m;i++){ const c=[i]; for(let j=1;j<=n;j++) c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1)); p=c; }
-  return p[n];
-}
-function checkAnswer(input, item){
-  const a = norm(input); if(!a) return false;
-  const targets = [item.tr, item.gr].flatMap(t=>t.split("/")).map(norm).filter(Boolean);
-  targets.push(norm(item.tr), norm(item.gr));
-  return targets.some(t=>{ const tol = t.length<=4?0:t.length<=10?1:2; return lev(a,t)<=tol; });
-}
-
 function catChips(){
   return `<div class="chips">` +
     `<button class="chip ${S.cat==="all"?"active":""}" data-cat="all">Alle</button>` +
@@ -344,7 +327,7 @@ function dots(id){ let h='<div class="dots" title="Lernstand">'; for(let i=1;i<=
 
 /* ======================= ANSICHTEN ======================= */
 let view = "learn";
-const views = {learn:renderLearn, cards:renderCards, quiz:renderQuiz, write:renderWrite, alpha:renderAlpha};
+const views = {learn:renderLearn, cards:renderCards, quiz:renderQuiz, listen:renderListen, sounds:renderSounds};
 function go(v){
   view = v;
   document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("active", b.dataset.view===v));
@@ -353,26 +336,37 @@ function go(v){
 }
 document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>go(b.dataset.view));
 
+/* Griechische Schrift nur, wenn gewünscht */
+function grSmall(it){ return S.showGr ? `<div class="note" style="font-size:.85rem">${esc(it.gr)}</div>` : ""; }
+function noVoiceWarn(){
+  return greekVoice ? "" : `<div class="card tip" style="background:var(--bad-soft);border-color:var(--bad-soft)">⚠️ Auf diesem Gerät wurde keine griechische Stimme gefunden.
+    Für die Aussprache in den Einstellungen eine griechische Stimme installieren
+    (iPhone: Einstellungen → Bedienungshilfen → Gesprochene Inhalte → Stimmen; Android: Einstellungen → Text-in-Sprache).</div>`;
+}
+
 /* ---------- LERNEN (Liste) ---------- */
 function renderLearn(){
   const cats = S.cat==="all" ? CATS : CATS.filter(c=>c.id===S.cat);
-  let h = catChips();
+  let h = noVoiceWarn() + catChips();
   if(S.cat==="all"){
     const total = ITEMS.length, mastered = ITEMS.filter(i=>box(i.id)>=4).length;
-    h += `<div class="card"><b>Willkommen! Καλώς ήρθες!</b>
-      <p class="tip">So funktioniert's: Lies die Wörter hier durch und tippe 🔊 zum Anhören.
-      Dann übe mit <b>Karten</b>, teste dich im <b>Quiz</b> und beim <b>Schreiben</b>.
-      Die grünen Punkte zeigen deinen Lernstand – Wörter, die du oft falsch hast, kommen häufiger dran.</p>
+    h += `<div class="card"><b>Willkommen! Kalós írthes!</b>
+      <p class="tip">Hier geht es ums <b>Sprechen und Hören</b>. Tippe 🔊 und sprich jeden Ausdruck laut nach.
+      Die <u>unterstrichene</u> Silbe wird betont.
+      Dann übe mit <b>Karten</b> (laut sagen), im <b>Quiz</b> und beim <b>Hören</b>.
+      Die grünen Punkte zeigen deinen Lernstand.</p>
       <div class="muted" style="font-size:.85rem">Gelernt: ${mastered} von ${total}</div>
-      <div class="bar"><div style="width:${total?mastered/total*100:0}%"></div></div></div>`;
+      <div class="bar"><div style="width:${total?mastered/total*100:0}%"></div></div>
+      <label class="tip" style="display:flex;gap:8px;align-items:center;margin-top:12px">
+        <input type="checkbox" id="showGr" ${S.showGr?"checked":""}> Griechische Schrift zusätzlich anzeigen</label></div>`;
   }
   cats.forEach(c=>{
     const its = ITEMS.filter(i=>i.cat===c.id);
     const m = its.filter(i=>box(i.id)>=4).length;
     h += `<div class="card"><h2>${c.icon} ${c.name} <span class="muted" style="font-size:.8rem;font-weight:400">${m}/${its.length}</span></h2><div class="list">`;
     its.forEach(it=>{
-      h += `<div class="item"><div class="txt"><div class="gr">${esc(it.gr)}</div>
-        <div class="tr">${esc(it.tr)}</div><div class="de">${esc(it.de)}</div>
+      h += `<div class="item"><div class="txt"><div class="gr">${stress(it.tr)}</div>
+        <div class="de">${esc(it.de)}</div>${grSmall(it)}
         ${it.note?`<div class="note">💡 ${esc(it.note)}</div>`:""}</div>
         ${dots(it.id)}${speakBtn(it.gr)}</div>`;
     });
@@ -381,15 +375,28 @@ function renderLearn(){
   h += `<div class="card"><button class="btn secondary" id="reset">Lernstand zurücksetzen</button></div>`;
   $("#app").innerHTML = h;
   bindChips(renderLearn);
+  const cb = $("#showGr"); if(cb) cb.onchange = ()=>{ S.showGr = cb.checked; save(); renderLearn(); };
   $("#reset").onclick = ()=>{ if(confirm("Wirklich den ganzen Lernstand löschen?")){ S.box={}; S.stats={right:0,wrong:0}; S.streak={last:"",days:0}; save(); updateHeader(); renderLearn(); } };
 }
+/* betonte Silbe hervorheben: Vokalgruppe mit Akzent + Konsonant davor */
+function stress(t){
+  const V = /[aeiouyáéíóúý]/i;
+  return esc(t).replace(/[^\s,?!.…\/()]+/g, w=>{
+    const m = w.match(/[áéíóúý]/i); if(!m) return w;
+    const s = m.index;
+    let e = m.index+1; while(e<w.length && V.test(w[e])) e++;
+    let k = s; if(k>0 && !V.test(w[k-1])) k--;
+    if(k>0 && /^(ch|th|ts|ps)$/i.test(w.slice(k-1,k+1))) k--;
+    return w.slice(0,k)+"<u>"+w.slice(k,e)+"</u>"+w.slice(e);
+  });
+}
 
-/* ---------- KARTEIKARTEN ---------- */
+/* ---------- KARTEN (laut sprechen) ---------- */
 let C = null;
 function renderCards(fresh){
-  if(!C || fresh===true){ C = {deck:pick(10), i:0, known:0, dir:C?C.dir:"gr"}; }
+  if(!C || fresh===true){ C = {deck:pick(10), i:0, known:0, dir:C?C.dir:"de"}; }
   let h = catChips();
-  h += `<div class="seg"><button data-dir="gr" class="${C.dir==="gr"?"active":""}">Griechisch → Deutsch</button><button data-dir="de" class="${C.dir==="de"?"active":""}">Deutsch → Griechisch</button></div>`;
+  h += `<div class="seg"><button data-dir="de" class="${C.dir==="de"?"active":""}">Deutsch → laut sagen</button><button data-dir="gr" class="${C.dir==="gr"?"active":""}">Hören → verstehen</button></div>`;
   if(C.i >= C.deck.length){
     h += `<div class="card" style="text-align:center"><div style="font-size:2.5rem">🎉</div>
       <h2>Runde geschafft!</h2><p class="muted">Gewusst: ${C.known} von ${C.deck.length}</p>
@@ -399,10 +406,10 @@ function renderCards(fresh){
   }
   const it = C.deck[C.i];
   const front = C.dir==="gr"
-    ? `<div class="big">${esc(it.gr)}</div>${speakBtn(it.gr)}`
-    : `<div class="big" style="font-size:1.5rem">${esc(it.de)}</div>`;
-  const back = `<div class="big">${esc(it.gr)}</div><div class="tr" style="font-size:1.1rem">${esc(it.tr)}</div>
-    <div class="de" style="font-size:1.05rem">${esc(it.de)}</div>${it.note?`<div class="note muted" style="font-size:.85rem">💡 ${esc(it.note)}</div>`:""}${speakBtn(it.gr)}`;
+    ? `<div class="muted">Hör zu – was bedeutet das?</div><button class="speak" style="width:72px;height:72px;font-size:2rem" data-say="${esc(it.gr)}">🔊</button>`
+    : `<div class="big" style="font-size:1.5rem">${esc(it.de)}</div><div class="muted">Sag es laut auf Griechisch 🗣️</div>`;
+  const back = `<div class="big">${stress(it.tr)}</div>
+    <div class="de" style="font-size:1.05rem">${esc(it.de)}</div>${grSmall(it)}${it.note?`<div class="note muted" style="font-size:.85rem">💡 ${esc(it.note)}</div>`:""}${speakBtn(it.gr)}`;
   h += `<div class="progressbar"><div style="width:${C.i/C.deck.length*100}%"></div></div>
     <div class="flash" id="flash"><div class="flash-inner">
       <div class="face front">${front}<div class="hint">Tippen zum Umdrehen</div></div>
@@ -413,7 +420,7 @@ function renderCards(fresh){
     <p class="muted" style="text-align:center;font-size:.85rem">Karte ${C.i+1} von ${C.deck.length}</p>`;
   $("#app").innerHTML = h; bindCardsCommon();
   const flash = $("#flash");
-  flash.onclick = ()=>{ flash.classList.toggle("flipped"); $("#rate").classList.remove("hidden"); if(flash.classList.contains("flipped") && C.dir==="de") speak(it.gr); };
+  flash.onclick = ()=>{ flash.classList.toggle("flipped"); $("#rate").classList.remove("hidden"); if(flash.classList.contains("flipped")) speak(it.gr); };
   if(C.dir==="gr") setTimeout(()=>speak(it.gr),250);
   $("#yes").onclick = ()=>{ mark(it.id,true); C.known++; C.i++; renderCards(); };
   $("#no").onclick = ()=>{ mark(it.id,false); C.i++; renderCards(); };
@@ -425,126 +432,83 @@ function bindCardsCommon(){
 
 /* ---------- QUIZ (Multiple Choice) ---------- */
 let Q = null;
-function renderQuiz(fresh){
-  if(!Q || fresh===true){
-    const deck = pick(10);
-    Q = {deck, i:0, score:0, answered:false, qs:deck.map(it=>{
-      const dir = Math.random()<.5 ? "gr" : "de";
-      const others = shuffle(ITEMS.filter(x=>x.id!==it.id && (x.cat===it.cat || Math.random()<.3))).slice(0,3);
-      return {it, dir, opts:shuffle([it, ...others])};
-    })};
-  }
+function makeQs(deck, forceDir){
+  return deck.map(it=>{
+    const dir = forceDir || (Math.random()<.5 ? "gr" : "de");
+    const others = shuffle(ITEMS.filter(x=>x.id!==it.id && x.de!==it.de && (x.cat===it.cat || Math.random()<.3))).slice(0,3);
+    return {it, dir, opts:shuffle([it, ...others])};
+  });
+}
+function quizView(state, rerender, opts){
   let h = catChips();
-  if(Q.i >= Q.deck.length){
-    const pct = Math.round(Q.score/Q.deck.length*100);
-    h += `<div class="card" style="text-align:center"><div class="score">${Q.score}/${Q.deck.length}</div>
-      <p>${pct>=90?"Εξαιρετικά! Ausgezeichnet! 🏆":pct>=70?"Μπράβο! Sehr gut! 👏":pct>=50?"Καλά! Gut, weiter so! 💪":"Σιγά σιγά – Schritt für Schritt! 🐢"}</p>
-      <button class="btn" id="again">Neues Quiz</button></div>`;
-    $("#app").innerHTML = h; bindChips(()=>renderQuiz(true));
-    $("#again").onclick = ()=>renderQuiz(true); return;
+  if(state.i >= state.deck.length){
+    const pct = Math.round(state.score/state.deck.length*100);
+    h += `<div class="card" style="text-align:center"><div class="score">${state.score}/${state.deck.length}</div>
+      <p>${pct>=90?"Exeretiká! Ausgezeichnet! 🏆":pct>=70?"Brávo! Sehr gut! 👏":pct>=50?"Kalá! Gut, weiter so! 💪":"Sigá sigá – Schritt für Schritt! 🐢"}</p>
+      <button class="btn" id="again">Neue Runde</button></div>`;
+    $("#app").innerHTML = h; bindChips(()=>rerender(true));
+    $("#again").onclick = ()=>rerender(true); return;
   }
-  const q = Q.qs[Q.i];
-  const prompt = q.dir==="gr"
-    ? `<div class="big">${esc(q.it.gr)}</div><div class="muted">Was bedeutet das?</div><div style="margin-top:10px">${speakBtn(q.it.gr)}</div>`
-    : `<div class="big" style="font-size:1.4rem">${esc(q.it.de)}</div><div class="muted">Wie sagt man das auf Griechisch?</div>`;
-  h += `<div class="progressbar"><div style="width:${Q.i/Q.deck.length*100}%"></div></div>
+  const q = state.qs[state.i];
+  let prompt;
+  if(opts.listen) prompt = `<div class="muted" style="margin-bottom:10px">Hör gut zu – was bedeutet das?</div>
+      <button class="speak" style="width:80px;height:80px;font-size:2.2rem" data-say="${esc(q.it.gr)}">🔊</button>
+      <div id="reveal" class="hidden" style="margin-top:12px"><div class="big" style="font-size:1.4rem">${stress(q.it.tr)}</div>${grSmall(q.it)}</div>`;
+  else if(q.dir==="gr") prompt = `<div class="big">${stress(q.it.tr)}</div>${grSmall(q.it)}<div class="muted">Was bedeutet das?</div><div style="margin-top:10px">${speakBtn(q.it.gr)}</div>`;
+  else prompt = `<div class="big" style="font-size:1.4rem">${esc(q.it.de)}</div><div class="muted">Wie sagt man das auf Griechisch?</div>`;
+  const showDe = opts.listen || q.dir==="gr";
+  h += `<div class="progressbar"><div style="width:${state.i/state.deck.length*100}%"></div></div>
     <div class="card q-prompt">${prompt}</div><div class="opts">` +
-    q.opts.map((o,k)=>`<button class="opt" data-k="${k}">${q.dir==="gr" ? esc(o.de) : `<b>${esc(o.gr)}</b><br><span class="tr">${esc(o.tr)}</span>`}</button>`).join("") +
+    q.opts.map((o,k)=>`<button class="opt" data-k="${k}">${showDe ? esc(o.de) : `<b>${stress(o.tr)}</b>`}</button>`).join("") +
     `</div><div style="margin-top:12px" class="hidden" id="nextWrap"><button class="btn" id="next">Weiter →</button></div>
-    <p class="muted" style="text-align:center;font-size:.85rem">Frage ${Q.i+1} von ${Q.deck.length} · Punkte: ${Q.score}</p>`;
-  $("#app").innerHTML = h; bindChips(()=>renderQuiz(true));
-  if(q.dir==="gr") setTimeout(()=>speak(q.it.gr),250);
+    <p class="muted" style="text-align:center;font-size:.85rem">Frage ${state.i+1} von ${state.deck.length} · Punkte: ${state.score}</p>`;
+  $("#app").innerHTML = h; bindChips(()=>rerender(true));
+  if(showDe) setTimeout(()=>speak(q.it.gr),250);
   document.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
-    if(Q.answered) return; Q.answered = true;
-    const chosen = q.opts[+b.dataset.k], ok = chosen.id===q.it.id;
+    if(state.answered) return; state.answered = true;
+    const ok = q.opts[+b.dataset.k].id===q.it.id;
     document.querySelectorAll(".opt").forEach(x=>{ if(q.opts[+x.dataset.k].id===q.it.id) x.classList.add("correct"); });
-    if(!ok) b.classList.add("wrong"); else Q.score++;
+    if(!ok) b.classList.add("wrong"); else state.score++;
     mark(q.it.id, ok);
-    if(q.dir==="de") speak(q.it.gr);
+    if(!showDe || opts.listen) speak(q.it.gr);
+    const r = $("#reveal"); if(r) r.classList.remove("hidden");
     $("#nextWrap").classList.remove("hidden");
   });
-  $("#next").onclick = ()=>{ Q.i++; Q.answered=false; renderQuiz(); };
+  $("#next").onclick = ()=>{ state.i++; state.answered=false; rerender(); };
+}
+function renderQuiz(fresh){
+  if(!Q || fresh===true){ const deck = pick(10); Q = {deck, i:0, score:0, answered:false, qs:makeQs(deck)}; }
+  quizView(Q, renderQuiz, {});
 }
 
-/* ---------- SCHREIBEN ---------- */
-let W = null;
-function renderWrite(fresh){
-  if(!W || fresh===true) W = {deck:pick(10), i:0, score:0, done:false};
-  let h = catChips();
-  if(W.i >= W.deck.length){
-    h += `<div class="card" style="text-align:center"><div class="score">${W.score}/${W.deck.length}</div>
-      <p>${W.score>=8?"Τέλεια! Perfekt! 🏆":"Weiter üben – πρακτική! ✍️"}</p>
-      <button class="btn" id="again">Neue Runde</button></div>`;
-    $("#app").innerHTML = h; bindChips(()=>renderWrite(true));
-    $("#again").onclick = ()=>renderWrite(true); return;
-  }
-  const it = W.deck[W.i];
-  h += `<div class="progressbar"><div style="width:${W.i/W.deck.length*100}%"></div></div>
-    <div class="card q-prompt"><div class="muted" style="margin-bottom:6px">Übersetze ins Griechische:</div>
-      <div class="big" style="font-size:1.4rem">${esc(it.de)}</div></div>
-    <input class="answer" id="ans" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="z.B. kaliméra oder καλημέρα">
-    <div id="fb"></div>
-    <div class="row"><button class="btn secondary" id="hint">💡 Tipp</button><button class="btn" id="check">Prüfen</button></div>
-    <p class="tip" style="margin-top:12px">Du kannst in Umschrift (lateinische Buchstaben) oder auf Griechisch tippen. Akzente sind egal, kleine Tippfehler werden toleriert.</p>
-    <p class="muted" style="text-align:center;font-size:.85rem">${W.i+1} von ${W.deck.length} · Punkte: ${W.score}</p>`;
-  $("#app").innerHTML = h; bindChips(()=>renderWrite(true));
-  const ans = $("#ans"); ans.focus();
-  let hintLvl = 0;
-  $("#hint").onclick = ()=>{
-    hintLvl++;
-    const t = it.tr; const show = Math.min(t.length, hintLvl*2);
-    $("#fb").innerHTML = `<div class="feedback" style="background:var(--accent-soft);color:var(--accent)">Beginnt mit: <b>${esc(t.slice(0,show))}</b>${show<t.length?"…":""}</div>`;
-  };
-  const doCheck = ()=>{
-    if(W.done){ W.i++; W.done=false; renderWrite(); return; }
-    const ok = checkAnswer(ans.value, it);
-    W.done = true; if(ok) W.score++;
-    mark(it.id, ok); speak(it.gr);
-    $("#fb").innerHTML = `<div class="feedback ${ok?"ok":"bad"}"><b>${ok?"✓ Σωστά! Richtig!":"✗ Leider falsch"}</b>
-      <div class="sol"><span class="gr">${esc(it.gr)}</span> · <span class="tr">${esc(it.tr)}</span></div></div>`;
-    $("#check").textContent = "Weiter →"; $("#hint").disabled = true; ans.disabled = true;
-  };
-  $("#check").onclick = doCheck;
-  ans.onkeydown = e=>{ if(e.key==="Enter") doCheck(); };
-  document.onkeydown = e=>{ if(view==="write" && W.done && e.key==="Enter") doCheck(); };
+/* ---------- HÖREN ---------- */
+let L = null;
+function renderListen(fresh){
+  if(!L || fresh===true){ const deck = pick(10); L = {deck, i:0, score:0, answered:false, qs:makeQs(deck,"gr")}; }
+  if(!greekVoice){ $("#app").innerHTML = noVoiceWarn(); return; }
+  quizView(L, renderListen, {listen:true});
 }
 
-/* ---------- ALPHABET ---------- */
-let A = {mode:"table"};
-function renderAlpha(){
-  let h = `<div class="seg"><button data-am="table" class="${A.mode==="table"?"active":""}">Übersicht</button><button data-am="quiz" class="${A.mode==="quiz"?"active":""}">Buchstaben-Quiz</button></div>`;
-  if(A.mode==="table"){
-    h += `<div class="card"><p class="tip" style="margin-top:0">Das griechische Alphabet hat 24 Buchstaben. Tippe auf einen Buchstaben, um ihn zu hören.</p>
-      <div class="grid-alpha">` + ALPHA.map(a=>`<div class="alpha" data-say="${esc(a[1])}"><div class="l">${a[0]}</div><div class="n">${a[1]}</div><div class="s">${a[2]}</div></div>`).join("") +
-      `</div></div><div class="card"><h2>Aussprache-Tipps</h2><div class="list">` +
-      ALPHA.map(a=>`<div class="item"><div class="gr" style="width:64px">${a[0]}</div><div class="txt de">${a[3]}</div></div>`).join("") +
-      `</div></div><div class="card"><h2>Buchstaben-Kombinationen</h2><div class="list">` +
-      COMBOS.map(c=>`<div class="item"><div class="gr" style="width:80px">${c[0]}</div><div class="txt tr">${c[1]}</div></div>`).join("") +
-      `</div><p class="tip">Der Akzent (´) zeigt, welche Silbe betont wird – z.B. καλημέρα = kali<b>mé</b>ra.</p></div>`;
-    $("#app").innerHTML = h;
-  } else {
-    if(!A.q || A.q.done){
-      const a = ALPHA[Math.floor(Math.random()*ALPHA.length)];
-      const opts = shuffle([a, ...shuffle(ALPHA.filter(x=>x!==a)).slice(0,3)]);
-      A.q = {a, opts, done:false}; A.score = A.score||0; A.n = A.n||0;
-    }
-    const q = A.q;
-    h += `<div class="card q-prompt"><div class="big" style="font-size:3.5rem">${q.a[0]}</div><div class="muted">Wie wird dieser Buchstabe ausgesprochen?</div></div>
-      <div class="opts">` + q.opts.map((o,k)=>`<button class="opt" data-k="${k}"><b>${o[2]}</b> <span class="muted">– ${o[1]}</span></button>`).join("") +
-      `</div><div style="margin-top:12px" class="hidden" id="nextWrap"><button class="btn" id="next">Nächster Buchstabe →</button></div>
-      <p class="muted" style="text-align:center;font-size:.85rem">Richtig: ${A.score} von ${A.n}</p>`;
-    $("#app").innerHTML = h;
-    document.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
-      if(q.done) return; q.done = true; A.n++;
-      const ok = q.opts[+b.dataset.k]===q.a; if(ok) A.score++;
-      document.querySelectorAll(".opt").forEach(x=>{ if(q.opts[+x.dataset.k]===q.a) x.classList.add("correct"); });
-      if(!ok) b.classList.add("wrong");
-      speak(q.a[1]);
-      $("#nextWrap").classList.remove("hidden");
-    });
-    $("#next").onclick = renderAlpha;
-  }
-  document.querySelectorAll("[data-am]").forEach(b=>b.onclick=()=>{ A.mode=b.dataset.am; renderAlpha(); });
+/* ---------- AUSSPRACHE-TIPPS ---------- */
+function renderSounds(){
+  let h = noVoiceWarn() + `<div class="card"><h2>🗣️ So klingt Griechisch</h2>
+    <p class="tip" style="margin-top:0">Die Umschrift in der App wird fast wie Deutsch gelesen. Diese Laute sind anders – tippe 🔊 für ein Beispiel.</p><div class="list">` +
+    SOUNDS.map(s=>`<div class="item"><div class="gr" style="width:70px;color:var(--accent)">${s[0]}</div>
+      <div class="txt"><div>${s[1]}</div><div class="note">Beispiel: <i>${s[2]}</i></div></div>${speakBtn(s[3])}</div>`).join("") +
+    `</div></div>
+    <div class="card"><h2>🎯 Die Betonung</h2>
+      <p class="tip" style="margin-top:0">Jedes Wort hat genau eine betonte Silbe – in der App <u>unterstrichen</u> und mit Akzent (´) markiert.
+      Die richtige Betonung ist wichtiger als jeder einzelne Laut: Griechen verstehen dich viel besser, wenn die Betonung stimmt.</p>
+      <div class="list">` +
+      [["Kaliméra","Καλημέρα","Guten Morgen"],["Parakaló","Παρακαλώ","Bitte"],["Efcharistó","Ευχαριστώ","Danke"],["Signómi","Συγγνώμη","Entschuldigung"]]
+      .map(x=>`<div class="item"><div class="txt"><div class="gr">${stress(x[0])}</div><div class="de">${x[2]}</div></div>${speakBtn(x[1])}</div>`).join("") +
+    `</div></div>
+    <div class="card"><h2>💡 Tipps</h2><p class="tip" style="margin-top:0">
+      • Sprich jeden Ausdruck mehrmals laut nach – am besten gleich nach dem 🔊.<br>
+      • Lieber langsam und deutlich als schnell.<br>
+      • «Ne» heisst <b>Ja</b> – nicht verwechseln! «Óchi» heisst Nein.<br>
+      • Mit einem freundlichen «Ja sas» und «Efcharistó» kommst du schon weit. 😊</p></div>`;
+  $("#app").innerHTML = h;
 }
 
 /* ======================= START ======================= */
