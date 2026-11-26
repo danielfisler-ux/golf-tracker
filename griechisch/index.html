@@ -294,14 +294,23 @@ function pick(n, src){
 }
 
 let greekVoice = null;
+const HAS_TTS = "speechSynthesis" in window;
 function loadVoices(){
-  if(!("speechSynthesis" in window)) return;
+  if(!HAS_TTS) return;
   const v = speechSynthesis.getVoices();
-  greekVoice = v.find(x=>/^el/i.test(x.lang)) || null;
+  const found = v.find(x=>/^el/i.test(x.lang) || /greek|griech|melina|nikos/i.test(x.name)) || null;
+  const changed = !!found !== !!greekVoice;
+  greekVoice = found;
+  /* iOS meldet Stimmen oft erst später – Ansicht dann neu zeichnen */
+  if(changed){ try{ views[view](); }catch(e){} }
 }
-if("speechSynthesis" in window){ loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
+if(HAS_TTS){
+  loadVoices();
+  if(speechSynthesis.addEventListener) speechSynthesis.addEventListener("voiceschanged", loadVoices);
+  let tries = 0; const iv = setInterval(()=>{ loadVoices(); if(greekVoice || ++tries>20) clearInterval(iv); }, 500);
+}
 function speak(text){
-  if(!("speechSynthesis" in window)) return;
+  if(!HAS_TTS) return;
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text.replace(/…/g,""));
   u.lang = "el-GR"; u.rate = 0.85;
@@ -339,9 +348,13 @@ document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>go(b.dataset.
 /* Griechische Schrift nur, wenn gewünscht */
 function grSmall(it){ return S.showGr ? `<div class="note" style="font-size:.85rem">${esc(it.gr)}</div>` : ""; }
 function noVoiceWarn(){
-  return greekVoice ? "" : `<div class="card tip" style="background:var(--bad-soft);border-color:var(--bad-soft)">⚠️ Auf diesem Gerät wurde keine griechische Stimme gefunden.
-    Für die Aussprache in den Einstellungen eine griechische Stimme installieren
-    (iPhone deutsch: Einstellungen → Bedienungshilfen → Gesprochene Inhalte → Stimmen → Griechisch; iPhone englisch: Settings → Accessibility → Read &amp; Speak (ältere iOS: Spoken Content) → Voices → Greek; Android: Einstellungen → Text-in-Sprache). Danach die App neu laden.</div>`;
+  if(!HAS_TTS) return `<div class="card tip" style="background:var(--bad-soft);border-color:var(--bad-soft)">⚠️ In dieser Ansicht kann kein Ton abgespielt werden.
+    Öffne die Datei in <b>Safari</b> (Datei lange antippen → Share/Teilen → Safari), nicht in der Vorschau der Dateien-App.</div>`;
+  if(greekVoice) return "";
+  return `<div class="card tip" style="background:var(--accent-soft);border-color:var(--accent-soft)">🔈 Griechische Stimme nicht automatisch erkannt – das ist auf dem iPhone häufig und meist kein Problem.
+    <button class="btn" style="margin:10px 0 6px" data-say="Καλημέρα! Γεια σας!">▶︎ Ton testen</button>
+    Hörst du «Kaliméra! Ja sas!» auf Griechisch, ist alles in Ordnung. Wenn nicht: Stumm-Schalter und Lautstärke prüfen und eine griechische Stimme installieren
+    (iPhone englisch: Settings → Accessibility → Read &amp; Speak → Voices → Greek; oder in den Einstellungen oben nach «Voices» bzw. «Stimmen» suchen). Danach Safari ganz schliessen und neu öffnen.</div>`;
 }
 
 /* ---------- LERNEN (Liste) ---------- */
@@ -485,7 +498,7 @@ function renderQuiz(fresh){
 let L = null;
 function renderListen(fresh){
   if(!L || fresh===true){ const deck = pick(10); L = {deck, i:0, score:0, answered:false, qs:makeQs(deck,"gr")}; }
-  if(!greekVoice){ $("#app").innerHTML = noVoiceWarn(); return; }
+  if(!HAS_TTS){ $("#app").innerHTML = noVoiceWarn(); return; }
   quizView(L, renderListen, {listen:true});
 }
 
