@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d5eaf">
+<title>Griechisch lernen</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230d5eaf'/%3E%3Ctext x='50' y='72' font-size='64' text-anchor='middle' fill='white' font-family='serif'%3EΩ%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#f4f7fb;--card:#fff;--text:#1a2433;--muted:#617086;--line:#dfe6ef;
+  --accent:#0d5eaf;--accent-soft:#e3eefa;--ok:#1f8a4c;--ok-soft:#e2f5ea;--bad:#c0392b;--bad-soft:#fbe7e4;
+}
+@media (prefers-color-scheme: dark){
+  :root{--bg:#0f1520;--card:#18212f;--text:#e8edf4;--muted:#93a1b5;--line:#2a3547;
+  --accent:#5aa2ee;--accent-soft:#1c2d44;--ok:#4cc27e;--ok-soft:#173326;--bad:#ef6f61;--bad-soft:#3a1d1a;}
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
+body{min-height:100vh;padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+header{background:var(--accent);color:#fff;padding:calc(14px + env(safe-area-inset-top)) 16px 14px;display:flex;align-items:center;gap:10px}
+header h1{font-size:1.15rem;margin:0;flex:1}
+header .stat{font-size:.85rem;opacity:.9}
+main{max-width:640px;margin:0 auto;padding:16px}
+nav.tabs{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom);z-index:10}
+nav.tabs button{flex:1;border:0;background:none;color:var(--muted);padding:10px 2px 8px;font-size:.72rem;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
+nav.tabs button span.i{font-size:1.3rem;line-height:1}
+nav.tabs button.active{color:var(--accent);font-weight:600}
+h2{font-size:1.1rem;margin:4px 0 12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
+.muted{color:var(--muted)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:10px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:999px;padding:7px 13px;font-size:.88rem;cursor:pointer}
+.chip.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn{border:0;border-radius:12px;padding:13px 16px;font-size:1rem;font-weight:600;cursor:pointer;background:var(--accent);color:#fff;width:100%}
+.btn.secondary{background:var(--accent-soft);color:var(--accent)}
+.btn:disabled{opacity:.5}
+.row{display:flex;gap:10px}
+.row>*{flex:1}
+.gr{font-size:1.25rem;font-weight:600}
+.tr{color:var(--accent);font-style:italic;font-size:.95rem}
+.de{color:var(--muted);font-size:.95rem}
+.list .item{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}
+.list .item:last-child{border-bottom:0}
+.list .item .txt{flex:1;min-width:0}
+.list .note{font-size:.8rem;color:var(--muted);margin-top:2px}
+.speak{border:0;background:var(--accent-soft);color:var(--accent);width:38px;height:38px;border-radius:50%;font-size:1.05rem;cursor:pointer;flex:0 0 auto}
+.dots{display:flex;gap:3px}
+.dots i{width:6px;height:6px;border-radius:50%;background:var(--line);display:block}
+.dots i.on{background:var(--ok)}
+/* flashcard */
+.flash{perspective:1000px;height:260px;margin-bottom:14px;cursor:pointer}
+.flash-inner{position:relative;width:100%;height:100%;transition:transform .45s;transform-style:preserve-3d}
+.flash.flipped .flash-inner{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:var(--card);border:1px solid var(--line);border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;gap:10px}
+.face.back{transform:rotateY(180deg)}
+.face .big{font-size:1.9rem;font-weight:700}
+.face .hint{position:absolute;bottom:12px;font-size:.78rem;color:var(--muted)}
+.progressbar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-bottom:14px}
+.progressbar div{height:100%;background:var(--accent);transition:width .3s}
+/* quiz */
+.q-prompt{text-align:center;padding:22px 12px}
+.q-prompt .big{font-size:1.7rem;font-weight:700;margin-bottom:6px}
+.opts{display:grid;gap:10px}
+.opt{border:2px solid var(--line);background:var(--card);color:var(--text);border-radius:12px;padding:14px;font-size:1rem;text-align:left;cursor:pointer}
+.opt.correct{border-color:var(--ok);background:var(--ok-soft)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+input.answer{width:100%;font-size:1.1rem;padding:13px;border-radius:12px;border:2px solid var(--line);background:var(--card);color:var(--text);margin-bottom:10px}
+input.answer:focus{outline:none;border-color:var(--accent)}
+.feedback{border-radius:12px;padding:12px;margin:10px 0}
+.feedback.ok{background:var(--ok-soft);color:var(--ok)}
+.feedback.bad{background:var(--bad-soft);color:var(--bad)}
+.feedback .sol{color:var(--text);margin-top:4px}
+.score{font-size:3rem;font-weight:800;text-align:center;color:var(--accent);margin:10px 0}
+.grid-alpha{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
+.alpha{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center;cursor:pointer}
+.alpha .l{font-size:1.6rem;font-weight:700}
+.alpha .n{font-size:.78rem;color:var(--muted)}
+.alpha .s{font-size:.82rem;color:var(--accent)}
+.bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden;margin-top:6px}
+.bar div{height:100%;background:var(--ok)}
+.seg{display:flex;background:var(--accent-soft);border-radius:12px;padding:4px;margin-bottom:12px}
+.seg button{flex:1;border:0;background:none;padding:9px;border-radius:9px;color:var(--accent);font-weight:600;cursor:pointer;font-size:.9rem}
+.seg button.active{background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.hidden{display:none!important}
+.tip{font-size:.85rem;color:var(--muted);line-height:1.45}
+</style>
+</head>
+<body>
+<header>
+  <h1>🇬🇷 Griechisch lernen</h1>
+  <div class="stat" id="hdrStat"></div>
+</header>
+<main id="app"></main>
+<nav class="tabs" id="tabs">
+  <button data-view="learn" class="active"><span class="i">📖</span>Lernen</button>
+  <button data-view="cards"><span class="i">🃏</span>Karten</button>
+  <button data-view="quiz"><span class="i">❓</span>Quiz</button>
+  <button data-view="write"><span class="i">✍️</span>Schreiben</button>
+  <button data-view="alpha"><span class="i">Αα</span>Alphabet</button>
+</nav>
+
+<script>
+/* ======================= DATEN ======================= */
+const CATS = [
+ {id:"gruss", name:"Begrüssung", icon:"👋", items:[
+  ["Γεια σου","Ja su","Hallo / Tschüss (zu einer Person, per Du)"],
+  ["Γεια σας","Ja sas","Hallo / Auf Wiedersehen (höflich oder mehrere)"],
+  ["Καλημέρα","Kaliméra","Guten Morgen"],
+  ["Καλησπέρα","Kalispéra","Guten Abend"],
+  ["Καληνύχτα","Kaliníchta","Gute Nacht"],
+  ["Αντίο","Adío","Auf Wiedersehen"],
+  ["Τι κάνεις;","Ti kánis?","Wie geht's dir?"],
+  ["Τι κάνετε;","Ti kánete?","Wie geht es Ihnen?"],
+  ["Καλά, ευχαριστώ","Kalá, efcharistó","Gut, danke"],
+  ["Με λένε …","Me léne …","Ich heisse …"],
+  ["Πώς σε λένε;","Pos se léne?","Wie heisst du?"],
+  ["Χάρηκα","Chárika","Freut mich"],
+ ]},
+ {id:"hoef", name:"Höflichkeit", icon:"🙏", items:[
+  ["Ναι","Ne","Ja","Achtung: klingt wie deutsches «nee»!"],
+  ["Όχι","Óchi","Nein"],
+  ["Παρακαλώ","Parakaló","Bitte / Gern geschehen"],
+  ["Ευχαριστώ","Efcharistó","Danke"],
+  ["Ευχαριστώ πολύ","Efcharistó polí","Vielen Dank"],
+  ["Συγγνώμη","Signómi","Entschuldigung"],
+  ["Εντάξει","Edáxi","Okay / In Ordnung"],
+  ["Δεν καταλαβαίνω","Den katalavéno","Ich verstehe nicht"],
+  ["Μιλάτε αγγλικά;","Miláte angliká?","Sprechen Sie Englisch?"],
+  ["Μιλάτε γερμανικά;","Miláte jermaniká?","Sprechen Sie Deutsch?"],
+  ["Πιο σιγά, παρακαλώ","Pjo sigá, parakaló","Langsamer, bitte"],
+ ]},
+ {id:"zahl", name:"Zahlen", icon:"🔢", items:[
+  ["ένα","éna","eins (1)"],
+  ["δύο","dío","zwei (2)"],
+  ["τρία","tría","drei (3)"],
+  ["τέσσερα","téssera","vier (4)"],
+  ["πέντε","pénde","fünf (5)"],
+  ["έξι","éxi","sechs (6)"],
+  ["εφτά","eftá","sieben (7)"],
+  ["οχτώ","ochtó","acht (8)"],
+  ["εννιά","enjá","neun (9)"],
+  ["δέκα","déka","zehn (10)"],
+  ["είκοσι","íkosi","zwanzig (20)"],
+  ["εκατό","ekató","hundert (100)"],
+ ]},
+ {id:"essen", name:"Restaurant", icon:"🍽️", items:[
+  ["Τον κατάλογο, παρακαλώ","Ton katálogo, parakaló","Die Speisekarte, bitte"],
+  ["Τον λογαριασμό, παρακαλώ","Ton logariasmó, parakaló","Die Rechnung, bitte"],
+  ["Ένα νερό, παρακαλώ","Éna neró, parakaló","Ein Wasser, bitte"],
+  ["Μία μπίρα","Mía bíra","Ein Bier"],
+  ["Ένα ποτήρι κρασί","Éna potíri krasí","Ein Glas Wein"],
+  ["Έναν καφέ","Énan kafé","Einen Kaffee"],
+  ["Ψωμί","Psomí","Brot"],
+  ["Καλή όρεξη!","Kalí órexi!","Guten Appetit!"],
+  ["Πολύ νόστιμο!","Polí nóstimo!","Sehr lecker!"],
+  ["Στην υγειά μας!","Stin ijá mas!","Prost! (Auf unsere Gesundheit)"],
+ ]},
+ {id:"weg", name:"Unterwegs", icon:"🧭", items:[
+  ["Πού είναι …;","Pu íne …?","Wo ist …?"],
+  ["Πού είναι η τουαλέτα;","Pu íne i tualéta?","Wo ist die Toilette?"],
+  ["η παραλία","i paralía","der Strand"],
+  ["το ξενοδοχείο","to xenodochío","das Hotel"],
+  ["το λεωφορείο","to leoforío","der Bus"],
+  ["ένα εισιτήριο","éna isitírio","eine Fahrkarte / ein Ticket"],
+  ["δεξιά","dexiá","rechts"],
+  ["αριστερά","aristerá","links"],
+  ["ευθεία","efthía","geradeaus"],
+  ["κοντά","kodá","nah"],
+  ["μακριά","makriá","weit weg"],
+ ]},
+ {id:"kauf", name:"Einkaufen", icon:"🛍️", items:[
+  ["Πόσο κάνει;","Póso káni?","Wie viel kostet das?"],
+  ["Θα ήθελα …","Tha íthela …","Ich hätte gern …"],
+  ["ακριβό","akrivó","teuer"],
+  ["φτηνό","ftinó","billig"],
+  ["Μπορώ να πληρώσω με κάρτα;","Boró na pliróso me kárta?","Kann ich mit Karte zahlen?"],
+  ["ανοιχτό","anichtó","offen / geöffnet"],
+  ["κλειστό","klistó","geschlossen"],
+  ["το φαρμακείο","to farmakío","die Apotheke"],
+  ["το σούπερ μάρκετ","to súper márket","der Supermarkt"],
+ ]},
+ {id:"zeit", name:"Zeit", icon:"⏰", items:[
+  ["σήμερα","símera","heute"],
+  ["αύριο","ávrio","morgen"],
+  ["χθες","chthes","gestern"],
+  ["τώρα","tóra","jetzt"],
+  ["αργότερα","argótera","später"],
+  ["Τι ώρα είναι;","Ti óra íne?","Wie spät ist es?"],
+ ]},
+ {id:"not", name:"Notfall", icon:"🚑", items:[
+  ["Βοήθεια!","Voíthia!","Hilfe!"],
+  ["Χρειάζομαι γιατρό","Chriázome jatró","Ich brauche einen Arzt"],
+  ["Είμαι άρρωστος / άρρωστη","Íme árrostos / árrosti","Ich bin krank (m / w)"],
+  ["Καλέστε την αστυνομία!","Kaléste tin astinomía!","Rufen Sie die Polizei!"],
+  ["Το νοσοκομείο","To nosokomío","Das Krankenhaus"],
+ ]},
+];
+
+const ALPHA = [
+ ["Α α","Alfa","a","wie «a»"],["Β β","Vita","v","wie «w» in Wasser"],["Γ γ","Gama","g / j","weiches «g», vor e/i wie «j»"],
+ ["Δ δ","Delta","dh","wie englisches «th» in «this»"],["Ε ε","Epsilon","e","wie «e»"],["Ζ ζ","Zita","z","stimmhaftes «s» wie in «Rose»"],
+ ["Η η","Ita","i","wie «i»"],["Θ θ","Thita","th","wie englisches «th» in «think»"],["Ι ι","Jota","i","wie «i»"],
+ ["Κ κ","Kapa","k","wie «k»"],["Λ λ","Lamda","l","wie «l»"],["Μ μ","Mi","m","wie «m»"],
+ ["Ν ν","Ni","n","wie «n»"],["Ξ ξ","Xi","x","wie «x» (ks)"],["Ο ο","Omikron","o","wie «o»"],
+ ["Π π","Pi","p","wie «p»"],["Ρ ρ","Ro","r","gerolltes «r»"],["Σ σ ς","Sigma","s","wie «ss»; ς am Wortende"],
+ ["Τ τ","Taf","t","wie «t»"],["Υ υ","Ipsilon","i","wie «i»"],["Φ φ","Fi","f","wie «f»"],
+ ["Χ χ","Chi","ch","wie «ch» in «Bach» / «ich»"],["Ψ ψ","Psi","ps","wie «ps»"],["Ω ω","Omega","o","wie «o»"],
+];
+const COMBOS = [
+ ["ου","u"],["αι","e"],["ει / οι","i"],["αυ","av / af"],["ευ","ev / ef"],["μπ","b"],["ντ","d"],["γκ","g"],["τσ","ts"],["τζ","dz"]
+];
+
+/* Alle Einträge mit IDs */
+const ITEMS = [];
+CATS.forEach(c=>c.items.forEach((it,i)=>{
+  ITEMS.push({id:c.id+"_"+i, cat:c.id, gr:it[0], tr:it[1], de:it[2], note:it[3]||""});
+}));
+
+/* ======================= SPEICHER ======================= */
+const STORE_KEY = "griechisch_v1";
+let S = {box:{}, cat:"all", stats:{right:0,wrong:0}, streak:{last:"",days:0}};
+try{ const raw = localStorage.getItem(STORE_KEY); if(raw) S = Object.assign(S, JSON.parse(raw)); }catch(e){}
+function save(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(S)); }catch(e){} }
+const MAXBOX = 5;
+function box(id){ return S.box[id]||0; }
+function mark(id, ok){
+  S.box[id] = ok ? Math.min(MAXBOX, box(id)+1) : Math.max(0, box(id)-2);
+  ok ? S.stats.right++ : S.stats.wrong++;
+  const today = new Date().toISOString().slice(0,10);
+  if(S.streak.last !== today){
+    const y = new Date(Date.now()-864e5).toISOString().slice(0,10);
+    S.streak.days = (S.streak.last===y) ? S.streak.days+1 : 1;
+    S.streak.last = today;
+  }
+  save(); updateHeader();
+}
+function updateHeader(){
+  const mastered = ITEMS.filter(i=>box(i.id)>=4).length;
+  document.getElementById("hdrStat").textContent =
+    `⭐ ${mastered}/${ITEMS.length}` + (S.streak.days ? `  🔥 ${S.streak.days}` : "");
+}
+
+/* ======================= HILFSFUNKTIONEN ======================= */
+const $ = s=>document.querySelector(s);
+const esc = s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const shuffle = a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+function pool(){ return S.cat==="all" ? ITEMS : ITEMS.filter(i=>i.cat===S.cat); }
+/* Gewichtete Auswahl: unbekannte Wörter kommen häufiger */
+function pick(n, src){
+  src = src || pool();
+  const weighted = src.map(it=>({it, w:Math.random()*(MAXBOX+1-box(it.id))**2 + Math.random()}));
+  weighted.sort((a,b)=>b.w-a.w);
+  return weighted.slice(0, Math.min(n, src.length)).map(x=>x.it);
+}
+
+let greekVoice = null;
+function loadVoices(){
+  if(!("speechSynthesis" in window)) return;
+  const v = speechSynthesis.getVoices();
+  greekVoice = v.find(x=>/^el/i.test(x.lang)) || null;
+}
+if("speechSynthesis" in window){ loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
+function speak(text){
+  if(!("speechSynthesis" in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text.replace(/…/g,""));
+  u.lang = "el-GR"; u.rate = 0.85;
+  if(greekVoice) u.voice = greekVoice;
+  speechSynthesis.speak(u);
+}
+function speakBtn(text){ return `<button class="speak" data-say="${esc(text)}" aria-label="Anhören">🔊</button>`; }
+document.addEventListener("click", e=>{
+  const b = e.target.closest("[data-say]");
+  if(b){ e.stopPropagation(); speak(b.dataset.say); }
+});
+
+function norm(s){
+  return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"")
+    .replace(/ς/g,"σ").replace(/\(.*?\)/g,"").replace(/[^a-zα-ω0-9 ]/g," ")
+    .replace(/y/g,"i").replace(/h/g,"").replace(/\s+/g," ").trim();
+}
+function lev(a,b){
+  const m=a.length,n=b.length; if(!m) return n; if(!n) return m;
+  let p=Array.from({length:n+1},(_,i)=>i);
+  for(let i=1;i<=m;i++){ const c=[i]; for(let j=1;j<=n;j++) c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1)); p=c; }
+  return p[n];
+}
+function checkAnswer(input, item){
+  const a = norm(input); if(!a) return false;
+  const targets = [item.tr, item.gr].flatMap(t=>t.split("/")).map(norm).filter(Boolean);
+  targets.push(norm(item.tr), norm(item.gr));
+  return targets.some(t=>{ const tol = t.length<=4?0:t.length<=10?1:2; return lev(a,t)<=tol; });
+}
+
+function catChips(){
+  return `<div class="chips">` +
+    `<button class="chip ${S.cat==="all"?"active":""}" data-cat="all">Alle</button>` +
+    CATS.map(c=>`<button class="chip ${S.cat===c.id?"active":""}" data-cat="${c.id}">${c.icon} ${c.name}</button>`).join("") +
+    `</div>`;
+}
+function bindChips(rerender){
+  document.querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>{ S.cat=b.dataset.cat; save(); rerender(); });
+}
+function dots(id){ let h='<div class="dots" title="Lernstand">'; for(let i=1;i<=MAXBOX;i++) h+=`<i class="${box(id)>=i?"on":""}"></i>`; return h+"</div>"; }
+
+/* ======================= ANSICHTEN ======================= */
+let view = "learn";
+const views = {learn:renderLearn, cards:renderCards, quiz:renderQuiz, write:renderWrite, alpha:renderAlpha};
+function go(v){
+  view = v;
+  document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("active", b.dataset.view===v));
+  window.scrollTo(0,0);
+  views[v]();
+}
+document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>go(b.dataset.view));
+
+/* ---------- LERNEN (Liste) ---------- */
+function renderLearn(){
+  const cats = S.cat==="all" ? CATS : CATS.filter(c=>c.id===S.cat);
+  let h = catChips();
+  if(S.cat==="all"){
+    const total = ITEMS.length, mastered = ITEMS.filter(i=>box(i.id)>=4).length;
+    h += `<div class="card"><b>Willkommen! Καλώς ήρθες!</b>
+      <p class="tip">So funktioniert's: Lies die Wörter hier durch und tippe 🔊 zum Anhören.
+      Dann übe mit <b>Karten</b>, teste dich im <b>Quiz</b> und beim <b>Schreiben</b>.
+      Die grünen Punkte zeigen deinen Lernstand – Wörter, die du oft falsch hast, kommen häufiger dran.</p>
+      <div class="muted" style="font-size:.85rem">Gelernt: ${mastered} von ${total}</div>
+      <div class="bar"><div style="width:${total?mastered/total*100:0}%"></div></div></div>`;
+  }
+  cats.forEach(c=>{
+    const its = ITEMS.filter(i=>i.cat===c.id);
+    const m = its.filter(i=>box(i.id)>=4).length;
+    h += `<div class="card"><h2>${c.icon} ${c.name} <span class="muted" style="font-size:.8rem;font-weight:400">${m}/${its.length}</span></h2><div class="list">`;
+    its.forEach(it=>{
+      h += `<div class="item"><div class="txt"><div class="gr">${esc(it.gr)}</div>
+        <div class="tr">${esc(it.tr)}</div><div class="de">${esc(it.de)}</div>
+        ${it.note?`<div class="note">💡 ${esc(it.note)}</div>`:""}</div>
+        ${dots(it.id)}${speakBtn(it.gr)}</div>`;
+    });
+    h += `</div></div>`;
+  });
+  h += `<div class="card"><button class="btn secondary" id="reset">Lernstand zurücksetzen</button></div>`;
+  $("#app").innerHTML = h;
+  bindChips(renderLearn);
+  $("#reset").onclick = ()=>{ if(confirm("Wirklich den ganzen Lernstand löschen?")){ S.box={}; S.stats={right:0,wrong:0}; S.streak={last:"",days:0}; save(); updateHeader(); renderLearn(); } };
+}
+
+/* ---------- KARTEIKARTEN ---------- */
+let C = null;
+function renderCards(fresh){
+  if(!C || fresh===true){ C = {deck:pick(10), i:0, known:0, dir:C?C.dir:"gr"}; }
+  let h = catChips();
+  h += `<div class="seg"><button data-dir="gr" class="${C.dir==="gr"?"active":""}">Griechisch → Deutsch</button><button data-dir="de" class="${C.dir==="de"?"active":""}">Deutsch → Griechisch</button></div>`;
+  if(C.i >= C.deck.length){
+    h += `<div class="card" style="text-align:center"><div style="font-size:2.5rem">🎉</div>
+      <h2>Runde geschafft!</h2><p class="muted">Gewusst: ${C.known} von ${C.deck.length}</p>
+      <button class="btn" id="again">Neue Runde</button></div>`;
+    $("#app").innerHTML = h; bindCardsCommon();
+    $("#again").onclick = ()=>renderCards(true); return;
+  }
+  const it = C.deck[C.i];
+  const front = C.dir==="gr"
+    ? `<div class="big">${esc(it.gr)}</div>${speakBtn(it.gr)}`
+    : `<div class="big" style="font-size:1.5rem">${esc(it.de)}</div>`;
+  const back = `<div class="big">${esc(it.gr)}</div><div class="tr" style="font-size:1.1rem">${esc(it.tr)}</div>
+    <div class="de" style="font-size:1.05rem">${esc(it.de)}</div>${it.note?`<div class="note muted" style="font-size:.85rem">💡 ${esc(it.note)}</div>`:""}${speakBtn(it.gr)}`;
+  h += `<div class="progressbar"><div style="width:${C.i/C.deck.length*100}%"></div></div>
+    <div class="flash" id="flash"><div class="flash-inner">
+      <div class="face front">${front}<div class="hint">Tippen zum Umdrehen</div></div>
+      <div class="face back">${back}</div></div></div>
+    <div class="row hidden" id="rate">
+      <button class="btn secondary" id="no" style="color:var(--bad);background:var(--bad-soft)">✗ Noch nicht</button>
+      <button class="btn" id="yes" style="background:var(--ok)">✓ Gewusst</button></div>
+    <p class="muted" style="text-align:center;font-size:.85rem">Karte ${C.i+1} von ${C.deck.length}</p>`;
+  $("#app").innerHTML = h; bindCardsCommon();
+  const flash = $("#flash");
+  flash.onclick = ()=>{ flash.classList.toggle("flipped"); $("#rate").classList.remove("hidden"); if(flash.classList.contains("flipped") && C.dir==="de") speak(it.gr); };
+  if(C.dir==="gr") setTimeout(()=>speak(it.gr),250);
+  $("#yes").onclick = ()=>{ mark(it.id,true); C.known++; C.i++; renderCards(); };
+  $("#no").onclick = ()=>{ mark(it.id,false); C.i++; renderCards(); };
+}
+function bindCardsCommon(){
+  bindChips(()=>renderCards(true));
+  document.querySelectorAll("[data-dir]").forEach(b=>b.onclick=()=>{ C.dir=b.dataset.dir; renderCards(true); });
+}
+
+/* ---------- QUIZ (Multiple Choice) ---------- */
+let Q = null;
+function renderQuiz(fresh){
+  if(!Q || fresh===true){
+    const deck = pick(10);
+    Q = {deck, i:0, score:0, answered:false, qs:deck.map(it=>{
+      const dir = Math.random()<.5 ? "gr" : "de";
+      const others = shuffle(ITEMS.filter(x=>x.id!==it.id && (x.cat===it.cat || Math.random()<.3))).slice(0,3);
+      return {it, dir, opts:shuffle([it, ...others])};
+    })};
+  }
+  let h = catChips();
+  if(Q.i >= Q.deck.length){
+    const pct = Math.round(Q.score/Q.deck.length*100);
+    h += `<div class="card" style="text-align:center"><div class="score">${Q.score}/${Q.deck.length}</div>
+      <p>${pct>=90?"Εξαιρετικά! Ausgezeichnet! 🏆":pct>=70?"Μπράβο! Sehr gut! 👏":pct>=50?"Καλά! Gut, weiter so! 💪":"Σιγά σιγά – Schritt für Schritt! 🐢"}</p>
+      <button class="btn" id="again">Neues Quiz</button></div>`;
+    $("#app").innerHTML = h; bindChips(()=>renderQuiz(true));
+    $("#again").onclick = ()=>renderQuiz(true); return;
+  }
+  const q = Q.qs[Q.i];
+  const prompt = q.dir==="gr"
+    ? `<div class="big">${esc(q.it.gr)}</div><div class="muted">Was bedeutet das?</div><div style="margin-top:10px">${speakBtn(q.it.gr)}</div>`
+    : `<div class="big" style="font-size:1.4rem">${esc(q.it.de)}</div><div class="muted">Wie sagt man das auf Griechisch?</div>`;
+  h += `<div class="progressbar"><div style="width:${Q.i/Q.deck.length*100}%"></div></div>
+    <div class="card q-prompt">${prompt}</div><div class="opts">` +
+    q.opts.map((o,k)=>`<button class="opt" data-k="${k}">${q.dir==="gr" ? esc(o.de) : `<b>${esc(o.gr)}</b><br><span class="tr">${esc(o.tr)}</span>`}</button>`).join("") +
+    `</div><div style="margin-top:12px" class="hidden" id="nextWrap"><button class="btn" id="next">Weiter →</button></div>
+    <p class="muted" style="text-align:center;font-size:.85rem">Frage ${Q.i+1} von ${Q.deck.length} · Punkte: ${Q.score}</p>`;
+  $("#app").innerHTML = h; bindChips(()=>renderQuiz(true));
+  if(q.dir==="gr") setTimeout(()=>speak(q.it.gr),250);
+  document.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
+    if(Q.answered) return; Q.answered = true;
+    const chosen = q.opts[+b.dataset.k], ok = chosen.id===q.it.id;
+    document.querySelectorAll(".opt").forEach(x=>{ if(q.opts[+x.dataset.k].id===q.it.id) x.classList.add("correct"); });
+    if(!ok) b.classList.add("wrong"); else Q.score++;
+    mark(q.it.id, ok);
+    if(q.dir==="de") speak(q.it.gr);
+    $("#nextWrap").classList.remove("hidden");
+  });
+  $("#next").onclick = ()=>{ Q.i++; Q.answered=false; renderQuiz(); };
+}
+
+/* ---------- SCHREIBEN ---------- */
+let W = null;
+function renderWrite(fresh){
+  if(!W || fresh===true) W = {deck:pick(10), i:0, score:0, done:false};
+  let h = catChips();
+  if(W.i >= W.deck.length){
+    h += `<div class="card" style="text-align:center"><div class="score">${W.score}/${W.deck.length}</div>
+      <p>${W.score>=8?"Τέλεια! Perfekt! 🏆":"Weiter üben – πρακτική! ✍️"}</p>
+      <button class="btn" id="again">Neue Runde</button></div>`;
+    $("#app").innerHTML = h; bindChips(()=>renderWrite(true));
+    $("#again").onclick = ()=>renderWrite(true); return;
+  }
+  const it = W.deck[W.i];
+  h += `<div class="progressbar"><div style="width:${W.i/W.deck.length*100}%"></div></div>
+    <div class="card q-prompt"><div class="muted" style="margin-bottom:6px">Übersetze ins Griechische:</div>
+      <div class="big" style="font-size:1.4rem">${esc(it.de)}</div></div>
+    <input class="answer" id="ans" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="z.B. kaliméra oder καλημέρα">
+    <div id="fb"></div>
+    <div class="row"><button class="btn secondary" id="hint">💡 Tipp</button><button class="btn" id="check">Prüfen</button></div>
+    <p class="tip" style="margin-top:12px">Du kannst in Umschrift (lateinische Buchstaben) oder auf Griechisch tippen. Akzente sind egal, kleine Tippfehler werden toleriert.</p>
+    <p class="muted" style="text-align:center;font-size:.85rem">${W.i+1} von ${W.deck.length} · Punkte: ${W.score}</p>`;
+  $("#app").innerHTML = h; bindChips(()=>renderWrite(true));
+  const ans = $("#ans"); ans.focus();
+  let hintLvl = 0;
+  $("#hint").onclick = ()=>{
+    hintLvl++;
+    const t = it.tr; const show = Math.min(t.length, hintLvl*2);
+    $("#fb").innerHTML = `<div class="feedback" style="background:var(--accent-soft);color:var(--accent)">Beginnt mit: <b>${esc(t.slice(0,show))}</b>${show<t.length?"…":""}</div>`;
+  };
+  const doCheck = ()=>{
+    if(W.done){ W.i++; W.done=false; renderWrite(); return; }
+    const ok = checkAnswer(ans.value, it);
+    W.done = true; if(ok) W.score++;
+    mark(it.id, ok); speak(it.gr);
+    $("#fb").innerHTML = `<div class="feedback ${ok?"ok":"bad"}"><b>${ok?"✓ Σωστά! Richtig!":"✗ Leider falsch"}</b>
+      <div class="sol"><span class="gr">${esc(it.gr)}</span> · <span class="tr">${esc(it.tr)}</span></div></div>`;
+    $("#check").textContent = "Weiter →"; $("#hint").disabled = true; ans.disabled = true;
+  };
+  $("#check").onclick = doCheck;
+  ans.onkeydown = e=>{ if(e.key==="Enter") doCheck(); };
+  document.onkeydown = e=>{ if(view==="write" && W.done && e.key==="Enter") doCheck(); };
+}
+
+/* ---------- ALPHABET ---------- */
+let A = {mode:"table"};
+function renderAlpha(){
+  let h = `<div class="seg"><button data-am="table" class="${A.mode==="table"?"active":""}">Übersicht</button><button data-am="quiz" class="${A.mode==="quiz"?"active":""}">Buchstaben-Quiz</button></div>`;
+  if(A.mode==="table"){
+    h += `<div class="card"><p class="tip" style="margin-top:0">Das griechische Alphabet hat 24 Buchstaben. Tippe auf einen Buchstaben, um ihn zu hören.</p>
+      <div class="grid-alpha">` + ALPHA.map(a=>`<div class="alpha" data-say="${esc(a[1])}"><div class="l">${a[0]}</div><div class="n">${a[1]}</div><div class="s">${a[2]}</div></div>`).join("") +
+      `</div></div><div class="card"><h2>Aussprache-Tipps</h2><div class="list">` +
+      ALPHA.map(a=>`<div class="item"><div class="gr" style="width:64px">${a[0]}</div><div class="txt de">${a[3]}</div></div>`).join("") +
+      `</div></div><div class="card"><h2>Buchstaben-Kombinationen</h2><div class="list">` +
+      COMBOS.map(c=>`<div class="item"><div class="gr" style="width:80px">${c[0]}</div><div class="txt tr">${c[1]}</div></div>`).join("") +
+      `</div><p class="tip">Der Akzent (´) zeigt, welche Silbe betont wird – z.B. καλημέρα = kali<b>mé</b>ra.</p></div>`;
+    $("#app").innerHTML = h;
+  } else {
+    if(!A.q || A.q.done){
+      const a = ALPHA[Math.floor(Math.random()*ALPHA.length)];
+      const opts = shuffle([a, ...shuffle(ALPHA.filter(x=>x!==a)).slice(0,3)]);
+      A.q = {a, opts, done:false}; A.score = A.score||0; A.n = A.n||0;
+    }
+    const q = A.q;
+    h += `<div class="card q-prompt"><div class="big" style="font-size:3.5rem">${q.a[0]}</div><div class="muted">Wie wird dieser Buchstabe ausgesprochen?</div></div>
+      <div class="opts">` + q.opts.map((o,k)=>`<button class="opt" data-k="${k}"><b>${o[2]}</b> <span class="muted">– ${o[1]}</span></button>`).join("") +
+      `</div><div style="margin-top:12px" class="hidden" id="nextWrap"><button class="btn" id="next">Nächster Buchstabe →</button></div>
+      <p class="muted" style="text-align:center;font-size:.85rem">Richtig: ${A.score} von ${A.n}</p>`;
+    $("#app").innerHTML = h;
+    document.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
+      if(q.done) return; q.done = true; A.n++;
+      const ok = q.opts[+b.dataset.k]===q.a; if(ok) A.score++;
+      document.querySelectorAll(".opt").forEach(x=>{ if(q.opts[+x.dataset.k]===q.a) x.classList.add("correct"); });
+      if(!ok) b.classList.add("wrong");
+      speak(q.a[1]);
+      $("#nextWrap").classList.remove("hidden");
+    });
+    $("#next").onclick = renderAlpha;
+  }
+  document.querySelectorAll("[data-am]").forEach(b=>b.onclick=()=>{ A.mode=b.dataset.am; renderAlpha(); });
+}
+
+/* ======================= START ======================= */
+updateHeader();
+go("learn");
+
+/* Offline-Unterstützung (wenn über http/https geöffnet) */
+if("serviceWorker" in navigator && location.protocol.startsWith("http")){
+  navigator.serviceWorker.register("sw.js").catch(()=>{});
+}
+</script>
+</body>
+</html>
