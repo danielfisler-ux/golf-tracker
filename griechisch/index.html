@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d5eaf">
+<title>Griechisch lernen</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230d5eaf'/%3E%3Ctext x='50' y='72' font-size='64' text-anchor='middle' fill='white' font-family='serif'%3EΩ%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#f4f7fb;--card:#fff;--text:#1a2433;--muted:#617086;--line:#dfe6ef;
+  --accent:#0d5eaf;--accent-soft:#e3eefa;--ok:#1f8a4c;--ok-soft:#e2f5ea;--bad:#c0392b;--bad-soft:#fbe7e4;
+}
+@media (prefers-color-scheme: dark){
+  :root{--bg:#0f1520;--card:#18212f;--text:#e8edf4;--muted:#93a1b5;--line:#2a3547;
+  --accent:#5aa2ee;--accent-soft:#1c2d44;--ok:#4cc27e;--ok-soft:#173326;--bad:#ef6f61;--bad-soft:#3a1d1a;}
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
+body{min-height:100vh;padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+header{background:var(--accent);color:#fff;padding:calc(14px + env(safe-area-inset-top)) 16px 14px;display:flex;align-items:center;gap:10px}
+header h1{font-size:1.15rem;margin:0;flex:1}
+header .stat{font-size:.85rem;opacity:.9}
+main{max-width:640px;margin:0 auto;padding:16px}
+nav.tabs{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom);z-index:10}
+nav.tabs button{flex:1;border:0;background:none;color:var(--muted);padding:10px 2px 8px;font-size:.72rem;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
+nav.tabs button span.i{font-size:1.3rem;line-height:1}
+nav.tabs button.active{color:var(--accent);font-weight:600}
+h2{font-size:1.1rem;margin:4px 0 12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
+.muted{color:var(--muted)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:10px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:999px;padding:7px 13px;font-size:.88rem;cursor:pointer}
+.chip.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn{border:0;border-radius:12px;padding:13px 16px;font-size:1rem;font-weight:600;cursor:pointer;background:var(--accent);color:#fff;width:100%}
+.btn.secondary{background:var(--accent-soft);color:var(--accent)}
+.btn:disabled{opacity:.5}
+.row{display:flex;gap:10px}
+.row>*{flex:1}
+.gr{font-size:1.25rem;font-weight:600}
+.tr{color:var(--accent);font-style:italic;font-size:.95rem}
+.de{color:var(--muted);font-size:.95rem}
+.list .item{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}
+.list .item:last-child{border-bottom:0}
+.list .item .txt{flex:1;min-width:0}
+.list .note{font-size:.8rem;color:var(--muted);margin-top:2px}
+.speak{border:0;background:var(--accent-soft);color:var(--accent);width:38px;height:38px;border-radius:50%;font-size:1.05rem;cursor:pointer;flex:0 0 auto}
+.dots{display:flex;gap:3px}
+.dots i{width:6px;height:6px;border-radius:50%;background:var(--line);display:block}
+.dots i.on{background:var(--ok)}
+/* flashcard */
+.flash{perspective:1000px;height:260px;margin-bottom:14px;cursor:pointer}
+.flash-inner{position:relative;width:100%;height:100%;transition:transform .45s;transform-style:preserve-3d}
+.flash.flipped .flash-inner{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:var(--card);border:1px solid var(--line);border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;gap:10px}
+.face.back{transform:rotateY(180deg)}
+.face .big{font-size:1.9rem;font-weight:700}
+.face .hint{position:absolute;bottom:12px;font-size:.78rem;color:var(--muted)}
+.progressbar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-bottom:14px}
+.progressbar div{height:100%;background:var(--accent);transition:width .3s}
+/* quiz */
+.q-prompt{text-align:center;padding:22px 12px}
+.q-prompt .big{font-size:1.7rem;font-weight:700;margin-bottom:6px}
+.opts{display:grid;gap:10px}
+.opt{border:2px solid var(--line);background:var(--card);color:var(--text);border-radius:12px;padding:14px;font-size:1rem;text-align:left;cursor:pointer}
+.opt.correct{border-color:var(--ok);background:var(--ok-soft)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+input.answer{width:100%;font-size:1.1rem;padding:13px;border-radius:12px;border:2px solid var(--line);background:var(--card);color:var(--text);margin-bottom:10px}
+input.answer:focus{outline:none;border-color:var(--accent)}
+.feedback{border-radius:12px;padding:12px;margin:10px 0}
+.feedback.ok{background:var(--ok-soft);color:var(--ok)}
+.feedback.bad{background:var(--bad-soft);color:var(--bad)}
+.feedback .sol{color:var(--text);margin-top:4px}
+.score{font-size:3rem;font-weight:800;text-align:center;color:var(--accent);margin:10px 0}
+.grid-alpha{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
+.alpha{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center;cursor:pointer}
+.alpha .l{font-size:1.6rem;font-weight:700}
+.alpha .n{font-size:.78rem;color:var(--muted)}
+.alpha .s{font-size:.82rem;color:var(--accent)}
+.bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden;margin-top:6px}
+.bar div{height:100%;background:var(--ok)}
+.seg{display:flex;background:var(--accent-soft);border-radius:12px;padding:4px;margin-bottom:12px}
+.seg button{flex:1;border:0;background:none;padding:9px;border-radius:9px;color:var(--accent);font-weight:600;cursor:pointer;font-size:.9rem}
+.seg button.active{background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.hidden{display:none!important}
+u{text-decoration:none;font-weight:800;border-bottom:2px solid var(--accent)}
+.tip{font-size:.85rem;color:var(--muted);line-height:1.45}
+</style>
+</head>
+<body>
+<header>
+  <h1>🇬🇷 Griechisch lernen</h1>
+  <div class="stat" id="hdrStat"></div>
+</header>
+<main id="app"></main>
+<nav class="tabs" id="tabs">
+  <button data-view="learn" class="active"><span class="i">📖</span>Lernen</button>
+  <button data-view="cards"><span class="i">🃏</span>Karten</button>
+  <button data-view="quiz"><span class="i">❓</span>Quiz</button>
+  <button data-view="listen"><span class="i">👂</span>Hören</button>
+  <button data-view="sounds"><span class="i">🗣️</span>Aussprache</button>
+</nav>
+
+<script>
+/* ======================= DATEN ======================= */
+const CATS = [
+ {id:"gruss", name:"Begrüssung", icon:"👋", items:[
+  ["Γεια σου","Ja su","Hallo / Tschüss (zu einer Person, per Du)"],
+  ["Γεια σας","Ja sas","Hallo / Auf Wiedersehen (höflich oder mehrere)"],
+  ["Καλημέρα","Kaliméra","Guten Morgen"],
+  ["Καλησπέρα","Kalispéra","Guten Abend"],
+  ["Καληνύχτα","Kaliníchta","Gute Nacht"],
+  ["Αντίο","Adío","Auf Wiedersehen"],
+  ["Τι κάνεις;","Ti kánis?","Wie geht's dir?"],
+  ["Τι κάνετε;","Ti kánete?","Wie geht es Ihnen?"],
+  ["Καλά, ευχαριστώ","Kalá, efcharistó","Gut, danke"],
+  ["Με λένε …","Me léne …","Ich heisse …"],
+  ["Πώς σε λένε;","Pos se léne?","Wie heisst du?"],
+  ["Χάρηκα","Chárika","Freut mich"],
+ ]},
+ {id:"hoef", name:"Höflichkeit", icon:"🙏", items:[
+  ["Ναι","Ne","Ja","Achtung: klingt wie deutsches «nee»!"],
+  ["Όχι","Óchi","Nein"],
+  ["Παρακαλώ","Parakaló","Bitte / Gern geschehen"],
+  ["Ευχαριστώ","Efcharistó","Danke"],
+  ["Ευχαριστώ πολύ","Efcharistó polí","Vielen Dank"],
+  ["Συγγνώμη","Signómi","Entschuldigung"],
+  ["Εντάξει","Edáxi","Okay / In Ordnung"],
+  ["Δεν καταλαβαίνω","Den katalavéno","Ich verstehe nicht"],
+  ["Μιλάτε αγγλικά;","Miláte angliká?","Sprechen Sie Englisch?"],
+  ["Μιλάτε γερμανικά;","Miláte jermaniká?","Sprechen Sie Deutsch?"],
+  ["Πιο σιγά, παρακαλώ","Pjo sigá, parakaló","Langsamer, bitte"],
+ ]},
+ {id:"zahl", name:"Zahlen", icon:"🔢", items:[
+  ["ένα","éna","eins (1)"],
+  ["δύο","dío","zwei (2)"],
+  ["τρία","tría","drei (3)"],
+  ["τέσσερα","téssera","vier (4)"],
+  ["πέντε","pénde","fünf (5)"],
+  ["έξι","éxi","sechs (6)"],
+  ["εφτά","eftá","sieben (7)"],
+  ["οχτώ","ochtó","acht (8)"],
+  ["εννιά","enjá","neun (9)"],
+  ["δέκα","déka","zehn (10)"],
+  ["είκοσι","íkosi","zwanzig (20)"],
+  ["εκατό","ekató","hundert (100)"],
+ ]},
+ {id:"essen", name:"Restaurant", icon:"🍽️", items:[
+  ["Τον κατάλογο, παρακαλώ","Ton katálogo, parakaló","Die Speisekarte, bitte"],
+  ["Τον λογαριασμό, παρακαλώ","Ton logariasmó, parakaló","Die Rechnung, bitte"],
+  ["Ένα νερό, παρακαλώ","Éna neró, parakaló","Ein Wasser, bitte"],
+  ["Μία μπίρα","Mía bíra","Ein Bier"],
+  ["Ένα ποτήρι κρασί","Éna potíri krasí","Ein Glas Wein"],
+  ["Έναν καφέ","Énan kafé","Einen Kaffee"],
+  ["Ψωμί","Psomí","Brot"],
+  ["Καλή όρεξη!","Kalí órexi!","Guten Appetit!"],
+  ["Πολύ νόστιμο!","Polí nóstimo!","Sehr lecker!"],
+  ["Στην υγειά μας!","Stin ijá mas!","Prost! (Auf unsere Gesundheit)"],
+ ]},
+ {id:"weg", name:"Unterwegs", icon:"🧭", items:[
+  ["Πού είναι …;","Pu íne …?","Wo ist …?"],
+  ["Πού είναι η τουαλέτα;","Pu íne i tualéta?","Wo ist die Toilette?"],
+  ["η παραλία","i paralía","der Strand"],
+  ["το ξενοδοχείο","to xenodochío","das Hotel"],
+  ["το λεωφορείο","to leoforío","der Bus"],
+  ["ένα εισιτήριο","éna isitírio","eine Fahrkarte / ein Ticket"],
+  ["δεξιά","dexiá","rechts"],
+  ["αριστερά","aristerá","links"],
+  ["ευθεία","efthía","geradeaus"],
+  ["κοντά","kodá","nah"],
+  ["μακριά","makriá","weit weg"],
+ ]},
+ {id:"kauf", name:"Einkaufen", icon:"🛍️", items:[
+  ["Πόσο κάνει;","Póso káni?","Wie viel kostet das?"],
+  ["Θα ήθελα …","Tha íthela …","Ich hätte gern …"],
+  ["ακριβό","akrivó","teuer"],
+  ["φτηνό","ftinó","billig"],
+  ["Μπορώ να πληρώσω με κάρτα;","Boró na pliróso me kárta?","Kann ich mit Karte zahlen?"],
+  ["ανοιχτό","anichtó","offen / geöffnet"],
+  ["κλειστό","klistó","geschlossen"],
+  ["το φαρμακείο","to farmakío","die Apotheke"],
+  ["το σούπερ μάρκετ","to súper márket","der Supermarkt"],
+ ]},
+ {id:"zeit", name:"Zeit", icon:"⏰", items:[
+  ["σήμερα","símera","heute"],
+  ["αύριο","ávrio","morgen"],
+  ["χθες","chthes","gestern"],
+  ["τώρα","tóra","jetzt"],
+  ["αργότερα","argótera","später"],
+  ["Τι ώρα είναι;","Ti óra íne?","Wie spät ist es?"],
+ ]},
+ {id:"wetter", name:"Wetter", icon:"☀️", items:[
+  ["Τι καιρό κάνει;","Ti keró káni?","Wie ist das Wetter?"],
+  ["Κάνει ζέστη","Káni zésti","Es ist heiss"],
+  ["Κάνει κρύο","Káni krío","Es ist kalt"],
+  ["Έχει ήλιο","Échi ílio","Die Sonne scheint"],
+  ["Βρέχει","Vréchi","Es regnet"],
+  ["Φυσάει","Fisái","Es ist windig"],
+  ["Ωραίος καιρός","Oréos kerós","Schönes Wetter"],
+  ["ο ήλιος","o ílios","die Sonne"],
+  ["η θάλασσα","i thálassa","das Meer"],
+ ]},
+ {id:"familie", name:"Familie", icon:"👨‍👩‍👧", items:[
+  ["η οικογένεια","i ikojénia","die Familie"],
+  ["ο πατέρας","o patéras","der Vater"],
+  ["η μητέρα","i mitéra","die Mutter"],
+  ["ο αδερφός","o aderfós","der Bruder"],
+  ["η αδερφή","i aderfí","die Schwester"],
+  ["ο γιος","o jos","der Sohn"],
+  ["η κόρη","i kóri","die Tochter"],
+  ["ο άντρας μου","o ándras mu","mein Mann"],
+  ["η γυναίκα μου","i jinéka mu","meine Frau"],
+  ["ο φίλος / η φίλη","o fílos / i fíli","der Freund / die Freundin"],
+  ["Έχεις παιδιά;","Échis pediá?","Hast du Kinder?"],
+ ]},
+ {id:"farben", name:"Farben", icon:"🎨", items:[
+  ["άσπρο","áspro","weiss"],
+  ["μαύρο","mávro","schwarz"],
+  ["κόκκινο","kókkino","rot"],
+  ["μπλε","ble","blau"],
+  ["πράσινο","prásino","grün"],
+  ["κίτρινο","kítrino","gelb"],
+  ["πορτοκαλί","portokalí","orange"],
+  ["γκρι","gri","grau"],
+  ["καφέ","kafé","braun","Gleiches Wort wie «Kaffee»!"],
+  ["ροζ","roz","rosa"],
+ ]},
+ {id:"not", name:"Notfall", icon:"🚑", items:[
+  ["Βοήθεια!","Voíthia!","Hilfe!"],
+  ["Χρειάζομαι γιατρό","Chriázome jatró","Ich brauche einen Arzt"],
+  ["Είμαι άρρωστος / άρρωστη","Íme árrostos / árrosti","Ich bin krank (m / w)"],
+  ["Καλέστε την αστυνομία!","Kaléste tin astinomía!","Rufen Sie die Polizei!"],
+  ["Το νοσοκομείο","To nosokomío","Das Krankenhaus"],
+ ]},
+];
+
+/* Aussprache-Tipps (Umschrift → wie man es spricht) */
+const SOUNDS = [
+ ["ch","wie «ch» in «Bach» – vor e/i weicher wie in «ich»","Óchi, efcharistó","Όχι, ευχαριστώ"],
+ ["th","wie englisches «th» in «think» (Zunge zwischen die Zähne)","thálassa","θάλασσα"],
+ ["j","wie deutsches «j» in «ja»","Ja sas, jatró","Γεια σας, γιατρό"],
+ ["v","wie deutsches «w» in «Wasser»","Voíthia, ávrio","Βοήθεια, αύριο"],
+ ["s","immer scharf wie «ss» in «Wasser»","Parakaló, símera","Παρακαλώ, σήμερα"],
+ ["z","weiches, summendes «s» wie in «Rose»","Káni zésti","Κάνει ζέστη"],
+ ["r","leicht gerollt mit der Zungenspitze","Kaliméra","Καλημέρα"],
+ ["e / o","immer kurz und offen, nie lang gezogen","Ne, tóra","Ναι, τώρα"],
+ ["b / d / g","wie im Deutschen – im Griechischen aus zwei Buchstaben gebildet","bíra, Edáxi","μπίρα, Εντάξει"],
+ ["ts","wie «z» in «Zeit»","Tsái (Tee)","Τσάι"],
+];
+
+/* Alle Einträge mit IDs */
+const ITEMS = [];
+CATS.forEach(c=>c.items.forEach((it,i)=>{
+  ITEMS.push({id:c.id+"_"+i, cat:c.id, gr:it[0], tr:it[1], de:it[2], note:it[3]||""});
+}));
+
+/* ======================= SPEICHER ======================= */
+const STORE_KEY = "griechisch_v1";
+let S = {box:{}, cat:"all", showGr:false, stats:{right:0,wrong:0}, streak:{last:"",days:0}};
+try{ const raw = localStorage.getItem(STORE_KEY); if(raw) S = Object.assign(S, JSON.parse(raw)); }catch(e){}
+function save(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(S)); }catch(e){} }
+const MAXBOX = 5;
+function box(id){ return S.box[id]||0; }
+function mark(id, ok){
+  S.box[id] = ok ? Math.min(MAXBOX, box(id)+1) : Math.max(0, box(id)-2);
+  ok ? S.stats.right++ : S.stats.wrong++;
+  const today = new Date().toISOString().slice(0,10);
+  if(S.streak.last !== today){
+    const y = new Date(Date.now()-864e5).toISOString().slice(0,10);
+    S.streak.days = (S.streak.last===y) ? S.streak.days+1 : 1;
+    S.streak.last = today;
+  }
+  save(); updateHeader();
+}
+function updateHeader(){
+  const mastered = ITEMS.filter(i=>box(i.id)>=4).length;
+  document.getElementById("hdrStat").textContent =
+    `⭐ ${mastered}/${ITEMS.length}` + (S.streak.days ? `  🔥 ${S.streak.days}` : "");
+}
+
+/* ======================= HILFSFUNKTIONEN ======================= */
+const $ = s=>document.querySelector(s);
+const esc = s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const shuffle = a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+function pool(){ return S.cat==="all" ? ITEMS : ITEMS.filter(i=>i.cat===S.cat); }
+/* Gewichtete Auswahl: unbekannte Wörter kommen häufiger */
+function pick(n, src){
+  src = src || pool();
+  const weighted = src.map(it=>({it, w:Math.random()*(MAXBOX+1-box(it.id))**2 + Math.random()}));
+  weighted.sort((a,b)=>b.w-a.w);
+  return weighted.slice(0, Math.min(n, src.length)).map(x=>x.it);
+}
+
+let greekVoice = null;
+const HAS_TTS = "speechSynthesis" in window;
+function loadVoices(){
+  if(!HAS_TTS) return;
+  const v = speechSynthesis.getVoices();
+  const found = v.find(x=>/^el/i.test(x.lang) || /greek|griech|melina|nikos/i.test(x.name)) || null;
+  const changed = !!found !== !!greekVoice;
+  greekVoice = found;
+  /* iOS meldet Stimmen oft erst später – Ansicht dann neu zeichnen */
+  if(changed){ try{ views[view](); }catch(e){} }
+}
+if(HAS_TTS){
+  loadVoices();
+  if(speechSynthesis.addEventListener) speechSynthesis.addEventListener("voiceschanged", loadVoices);
+  let tries = 0; const iv = setInterval(()=>{ loadVoices(); if(greekVoice || ++tries>20) clearInterval(iv); }, 500);
+}
+function speak(text){
+  if(!HAS_TTS) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text.replace(/…/g,""));
+  u.lang = "el-GR"; u.rate = 0.85;
+  if(greekVoice) u.voice = greekVoice;
+  speechSynthesis.speak(u);
+}
+function speakBtn(text){ return `<button class="speak" data-say="${esc(text)}" aria-label="Anhören">🔊</button>`; }
+document.addEventListener("click", e=>{
+  const b = e.target.closest("[data-say]");
+  if(b){ e.stopPropagation(); speak(b.dataset.say); }
+});
+
+function catChips(){
+  return `<div class="chips">` +
+    `<button class="chip ${S.cat==="all"?"active":""}" data-cat="all">Alle</button>` +
+    CATS.map(c=>`<button class="chip ${S.cat===c.id?"active":""}" data-cat="${c.id}">${c.icon} ${c.name}</button>`).join("") +
+    `</div>`;
+}
+function bindChips(rerender){
+  document.querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>{ S.cat=b.dataset.cat; save(); rerender(); });
+}
+function dots(id){ let h='<div class="dots" title="Lernstand">'; for(let i=1;i<=MAXBOX;i++) h+=`<i class="${box(id)>=i?"on":""}"></i>`; return h+"</div>"; }
+
+/* ======================= ANSICHTEN ======================= */
+let view = "learn";
+const views = {learn:renderLearn, cards:renderCards, quiz:renderQuiz, listen:renderListen, sounds:renderSounds};
+function go(v){
+  view = v;
+  document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("active", b.dataset.view===v));
+  window.scrollTo(0,0);
+  views[v]();
+}
+document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>go(b.dataset.view));
+
+/* Griechische Schrift nur, wenn gewünscht */
+function grSmall(it){ return S.showGr ? `<div class="note" style="font-size:.85rem">${esc(it.gr)}</div>` : ""; }
+function noVoiceWarn(){
+  if(!HAS_TTS) return `<div class="card tip" style="background:var(--bad-soft);border-color:var(--bad-soft)">⚠️ In dieser Ansicht kann kein Ton abgespielt werden.
+    Öffne die Datei in <b>Safari</b> (Datei lange antippen → Share/Teilen → Safari), nicht in der Vorschau der Dateien-App.</div>`;
+  if(greekVoice) return "";
+  return `<div class="card tip" style="background:var(--accent-soft);border-color:var(--accent-soft)">🔈 Griechische Stimme nicht automatisch erkannt – das ist auf dem iPhone häufig und meist kein Problem.
+    <button class="btn" style="margin:10px 0 6px" data-say="Καλημέρα! Γεια σας!">▶︎ Ton testen</button>
+    Hörst du «Kaliméra! Ja sas!» auf Griechisch, ist alles in Ordnung. Wenn nicht: Stumm-Schalter und Lautstärke prüfen und eine griechische Stimme installieren
+    (iPhone englisch: Settings → Accessibility → Read &amp; Speak → Voices → Greek; oder in den Einstellungen oben nach «Voices» bzw. «Stimmen» suchen). Danach Safari ganz schliessen und neu öffnen.</div>`;
+}
+
+/* ---------- LERNEN (Liste) ---------- */
+function renderLearn(){
+  const cats = S.cat==="all" ? CATS : CATS.filter(c=>c.id===S.cat);
+  let h = noVoiceWarn() + catChips();
+  if(S.cat==="all"){
+    const total = ITEMS.length, mastered = ITEMS.filter(i=>box(i.id)>=4).length;
+    h += `<div class="card"><b>Willkommen! Kalós írthes!</b>
+      <p class="tip">Hier geht es ums <b>Sprechen und Hören</b>. Tippe 🔊 und sprich jeden Ausdruck laut nach.
+      Die <u>unterstrichene</u> Silbe wird betont.
+      Dann übe mit <b>Karten</b> (laut sagen), im <b>Quiz</b> und beim <b>Hören</b>.
+      Die grünen Punkte zeigen deinen Lernstand.</p>
+      <div class="muted" style="font-size:.85rem">Gelernt: ${mastered} von ${total}</div>
+      <div class="bar"><div style="width:${total?mastered/total*100:0}%"></div></div>
+      <label class="tip" style="display:flex;gap:8px;align-items:center;margin-top:12px">
+        <input type="checkbox" id="showGr" ${S.showGr?"checked":""}> Griechische Schrift zusätzlich anzeigen</label></div>`;
+  }
+  cats.forEach(c=>{
+    const its = ITEMS.filter(i=>i.cat===c.id);
+    const m = its.filter(i=>box(i.id)>=4).length;
+    h += `<div class="card"><h2>${c.icon} ${c.name} <span class="muted" style="font-size:.8rem;font-weight:400">${m}/${its.length}</span></h2><div class="list">`;
+    its.forEach(it=>{
+      h += `<div class="item"><div class="txt"><div class="gr">${stress(it.tr)}</div>
+        <div class="de">${esc(it.de)}</div>${grSmall(it)}
+        ${it.note?`<div class="note">💡 ${esc(it.note)}</div>`:""}</div>
+        ${dots(it.id)}${speakBtn(it.gr)}</div>`;
+    });
+    h += `</div></div>`;
+  });
+  h += `<div class="card"><button class="btn secondary" id="reset">Lernstand zurücksetzen</button></div>`;
+  $("#app").innerHTML = h;
+  bindChips(renderLearn);
+  const cb = $("#showGr"); if(cb) cb.onchange = ()=>{ S.showGr = cb.checked; save(); renderLearn(); };
+  $("#reset").onclick = ()=>{ if(confirm("Wirklich den ganzen Lernstand löschen?")){ S.box={}; S.stats={right:0,wrong:0}; S.streak={last:"",days:0}; save(); updateHeader(); renderLearn(); } };
+}
+/* betonte Silbe hervorheben: Vokalgruppe mit Akzent + Konsonant davor */
+function stress(t){
+  const V = /[aeiouyáéíóúý]/i;
+  return esc(t).replace(/[^\s,?!.…\/()]+/g, w=>{
+    const m = w.match(/[áéíóúý]/i); if(!m) return w;
+    const s = m.index;
+    let e = m.index+1; while(e<w.length && V.test(w[e])) e++;
+    let k = s; if(k>0 && !V.test(w[k-1])) k--;
+    if(k>0 && /^(ch|th|ts|ps)$/i.test(w.slice(k-1,k+1))) k--;
+    return w.slice(0,k)+"<u>"+w.slice(k,e)+"</u>"+w.slice(e);
+  });
+}
+
+/* ---------- KARTEN (laut sprechen) ---------- */
+let C = null;
+function renderCards(fresh){
+  if(!C || fresh===true){ C = {deck:pick(10), i:0, known:0, dir:C?C.dir:"de"}; }
+  let h = catChips();
+  h += `<div class="seg"><button data-dir="de" class="${C.dir==="de"?"active":""}">Deutsch → laut sagen</button><button data-dir="gr" class="${C.dir==="gr"?"active":""}">Hören → verstehen</button></div>`;
+  if(C.i >= C.deck.length){
+    h += `<div class="card" style="text-align:center"><div style="font-size:2.5rem">🎉</div>
+      <h2>Runde geschafft!</h2><p class="muted">Gewusst: ${C.known} von ${C.deck.length}</p>
+      <button class="btn" id="again">Neue Runde</button></div>`;
+    $("#app").innerHTML = h; bindCardsCommon();
+    $("#again").onclick = ()=>renderCards(true); return;
+  }
+  const it = C.deck[C.i];
+  const front = C.dir==="gr"
+    ? `<div class="muted">Hör zu – was bedeutet das?</div><button class="speak" style="width:72px;height:72px;font-size:2rem" data-say="${esc(it.gr)}">🔊</button>`
+    : `<div class="big" style="font-size:1.5rem">${esc(it.de)}</div><div class="muted">Sag es laut auf Griechisch 🗣️</div>`;
+  const back = `<div class="big">${stress(it.tr)}</div>
+    <div class="de" style="font-size:1.05rem">${esc(it.de)}</div>${grSmall(it)}${it.note?`<div class="note muted" style="font-size:.85rem">💡 ${esc(it.note)}</div>`:""}${speakBtn(it.gr)}`;
+  h += `<div class="progressbar"><div style="width:${C.i/C.deck.length*100}%"></div></div>
+    <div class="flash" id="flash"><div class="flash-inner">
+      <div class="face front">${front}<div class="hint">Tippen zum Umdrehen</div></div>
+      <div class="face back">${back}</div></div></div>
+    <div class="row hidden" id="rate">
+      <button class="btn secondary" id="no" style="color:var(--bad);background:var(--bad-soft)">✗ Noch nicht</button>
+      <button class="btn" id="yes" style="background:var(--ok)">✓ Gewusst</button></div>
+    <p class="muted" style="text-align:center;font-size:.85rem">Karte ${C.i+1} von ${C.deck.length}</p>`;
+  $("#app").innerHTML = h; bindCardsCommon();
+  const flash = $("#flash");
+  flash.onclick = ()=>{ flash.classList.toggle("flipped"); $("#rate").classList.remove("hidden"); if(flash.classList.contains("flipped")) speak(it.gr); };
+  if(C.dir==="gr") setTimeout(()=>speak(it.gr),250);
+  $("#yes").onclick = ()=>{ mark(it.id,true); C.known++; C.i++; renderCards(); };
+  $("#no").onclick = ()=>{ mark(it.id,false); C.i++; renderCards(); };
+}
+function bindCardsCommon(){
+  bindChips(()=>renderCards(true));
+  document.querySelectorAll("[data-dir]").forEach(b=>b.onclick=()=>{ C.dir=b.dataset.dir; renderCards(true); });
+}
+
+/* ---------- QUIZ (Multiple Choice) ---------- */
+let Q = null;
+function makeQs(deck, forceDir){
+  return deck.map(it=>{
+    const dir = forceDir || (Math.random()<.5 ? "gr" : "de");
+    const others = shuffle(ITEMS.filter(x=>x.id!==it.id && x.de!==it.de && (x.cat===it.cat || Math.random()<.3))).slice(0,3);
+    return {it, dir, opts:shuffle([it, ...others])};
+  });
+}
+function quizView(state, rerender, opts){
+  let h = catChips();
+  if(state.i >= state.deck.length){
+    const pct = Math.round(state.score/state.deck.length*100);
+    h += `<div class="card" style="text-align:center"><div class="score">${state.score}/${state.deck.length}</div>
+      <p>${pct>=90?"Exeretiká! Ausgezeichnet! 🏆":pct>=70?"Brávo! Sehr gut! 👏":pct>=50?"Kalá! Gut, weiter so! 💪":"Sigá sigá – Schritt für Schritt! 🐢"}</p>
+      <button class="btn" id="again">Neue Runde</button></div>`;
+    $("#app").innerHTML = h; bindChips(()=>rerender(true));
+    $("#again").onclick = ()=>rerender(true); return;
+  }
+  const q = state.qs[state.i];
+  let prompt;
+  if(opts.listen) prompt = `<div class="muted" style="margin-bottom:10px">Hör gut zu – was bedeutet das?</div>
+      <button class="speak" style="width:80px;height:80px;font-size:2.2rem" data-say="${esc(q.it.gr)}">🔊</button>
+      <div id="reveal" class="hidden" style="margin-top:12px"><div class="big" style="font-size:1.4rem">${stress(q.it.tr)}</div>${grSmall(q.it)}</div>`;
+  else if(q.dir==="gr") prompt = `<div class="big">${stress(q.it.tr)}</div>${grSmall(q.it)}<div class="muted">Was bedeutet das?</div><div style="margin-top:10px">${speakBtn(q.it.gr)}</div>`;
+  else prompt = `<div class="big" style="font-size:1.4rem">${esc(q.it.de)}</div><div class="muted">Wie sagt man das auf Griechisch?</div>`;
+  const showDe = opts.listen || q.dir==="gr";
+  h += `<div class="progressbar"><div style="width:${state.i/state.deck.length*100}%"></div></div>
+    <div class="card q-prompt">${prompt}</div><div class="opts">` +
+    q.opts.map((o,k)=>`<button class="opt" data-k="${k}">${showDe ? esc(o.de) : `<b>${stress(o.tr)}</b>`}</button>`).join("") +
+    `</div><div style="margin-top:12px" class="hidden" id="nextWrap"><button class="btn" id="next">Weiter →</button></div>
+    <p class="muted" style="text-align:center;font-size:.85rem">Frage ${state.i+1} von ${state.deck.length} · Punkte: ${state.score}</p>`;
+  $("#app").innerHTML = h; bindChips(()=>rerender(true));
+  if(showDe) setTimeout(()=>speak(q.it.gr),250);
+  document.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
+    if(state.answered) return; state.answered = true;
+    const ok = q.opts[+b.dataset.k].id===q.it.id;
+    document.querySelectorAll(".opt").forEach(x=>{ if(q.opts[+x.dataset.k].id===q.it.id) x.classList.add("correct"); });
+    if(!ok) b.classList.add("wrong"); else state.score++;
+    mark(q.it.id, ok);
+    if(!showDe || opts.listen) speak(q.it.gr);
+    const r = $("#reveal"); if(r) r.classList.remove("hidden");
+    $("#nextWrap").classList.remove("hidden");
+  });
+  $("#next").onclick = ()=>{ state.i++; state.answered=false; rerender(); };
+}
+function renderQuiz(fresh){
+  if(!Q || fresh===true){ const deck = pick(10); Q = {deck, i:0, score:0, answered:false, qs:makeQs(deck)}; }
+  quizView(Q, renderQuiz, {});
+}
+
+/* ---------- HÖREN ---------- */
+let L = null;
+function renderListen(fresh){
+  if(!L || fresh===true){ const deck = pick(10); L = {deck, i:0, score:0, answered:false, qs:makeQs(deck,"gr")}; }
+  if(!HAS_TTS){ $("#app").innerHTML = noVoiceWarn(); return; }
+  quizView(L, renderListen, {listen:true});
+}
+
+/* ---------- AUSSPRACHE-TIPPS ---------- */
+function renderSounds(){
+  let h = noVoiceWarn() + `<div class="card"><h2>🗣️ So klingt Griechisch</h2>
+    <p class="tip" style="margin-top:0">Die Umschrift in der App wird fast wie Deutsch gelesen. Diese Laute sind anders – tippe 🔊 für ein Beispiel.</p><div class="list">` +
+    SOUNDS.map(s=>`<div class="item"><div class="gr" style="width:70px;color:var(--accent)">${s[0]}</div>
+      <div class="txt"><div>${s[1]}</div><div class="note">Beispiel: <i>${s[2]}</i></div></div>${speakBtn(s[3])}</div>`).join("") +
+    `</div></div>
+    <div class="card"><h2>🎯 Die Betonung</h2>
+      <p class="tip" style="margin-top:0">Jedes Wort hat genau eine betonte Silbe – in der App <u>unterstrichen</u> und mit Akzent (´) markiert.
+      Die richtige Betonung ist wichtiger als jeder einzelne Laut: Griechen verstehen dich viel besser, wenn die Betonung stimmt.</p>
+      <div class="list">` +
+      [["Kaliméra","Καλημέρα","Guten Morgen"],["Parakaló","Παρακαλώ","Bitte"],["Efcharistó","Ευχαριστώ","Danke"],["Signómi","Συγγνώμη","Entschuldigung"]]
+      .map(x=>`<div class="item"><div class="txt"><div class="gr">${stress(x[0])}</div><div class="de">${x[2]}</div></div>${speakBtn(x[1])}</div>`).join("") +
+    `</div></div>
+    <div class="card"><h2>💡 Tipps</h2><p class="tip" style="margin-top:0">
+      • Sprich jeden Ausdruck mehrmals laut nach – am besten gleich nach dem 🔊.<br>
+      • Lieber langsam und deutlich als schnell.<br>
+      • «Ne» heisst <b>Ja</b> – nicht verwechseln! «Óchi» heisst Nein.<br>
+      • Mit einem freundlichen «Ja sas» und «Efcharistó» kommst du schon weit. 😊</p></div>`;
+  $("#app").innerHTML = h;
+}
+
+/* ======================= START ======================= */
+updateHeader();
+go("learn");
+
+/* Offline-Unterstützung (wenn über http/https geöffnet) */
+if("serviceWorker" in navigator && location.protocol.startsWith("http")){
+  navigator.serviceWorker.register("sw.js").catch(()=>{});
+}
+</script>
+</body>
+</html>
